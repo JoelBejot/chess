@@ -15,17 +15,15 @@ class Game
   def initialize
     @player1 = Player.new
     @player2 = Player.new
-    @color_array = %w[white black]
+    @color_array = [white, black]
   end
 
   def game
     # intro
     # chess_rules = Rules.new
     # chess_rules.rules
-    # set_player_name
-    # who_goes_first
-    puts white
-    puts black
+    set_player_name
+    who_goes_first
   end
 
   def set_player_name
@@ -47,7 +45,7 @@ class Game
   def who_goes_first
     assign_color
     display_player_color
-    player1.color == 'white' ? (puts "#{player1.name} goes first!") : (puts "#{player2.name} goes first!")
+    player1.color == white ? (puts "#{player1.name} goes first!") : (puts "#{player2.name} goes first!")
   end
 
   def assign_color
