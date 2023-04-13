@@ -3,27 +3,39 @@
 require_relative 'player'
 require_relative 'rules'
 require_relative 'symbols'
+require_relative 'moves'
+require_relative 'board'
 require 'io/console'
 
 # class for controlling game flow
 class Game
   include Symbols
+  include Moves
 
-  attr_accessor :player1, :player2
+  attr_accessor :player1, :player2, :board
   attr_reader :color_array
 
   def initialize
     @player1 = Player.new
     @player2 = Player.new
     @color_array = [white, black]
+    @board = Board.new
   end
 
   def game
     # intro
     # chess_rules = Rules.new
     # chess_rules.rules
-    set_player_name
-    who_goes_first
+    # set_player_name
+    # who_goes_first
+    turn = 0
+    loop do
+      turn += 1
+      board.display_board
+      move_arr = move(turn)
+      board.update_board(move_arr)
+      break if turn >= 10
+    end
   end
 
   def set_player_name
@@ -35,6 +47,52 @@ class Game
     puts "What is Player #{num}'s name?"
     gets.chomp
   end
+
+  def move(turn)
+    valid_move = false
+    piece_and_move = [nil, nil]
+    loop do
+      if turn.odd?
+        (puts "#{player1.name}, which piece would you like to move? (Please enter column then row, ex. 'd2')")
+      else
+        (puts "#{player2.name}, which piece would you like to move? (Please enter column then row, ex. 'd2')")
+      end
+      piece_and_move[0] = gets.chomp.downcase
+      puts 'Where would you like to move that piece?'
+      piece_and_move[1] = gets.chomp.downcase
+      valid_move = validate_input(piece_and_move)
+      break if valid_move
+    end
+    move_array = translate_move_to_grid(piece_and_move)
+    board.validate_move(move_array)
+    move_array
+  end
+
+  def translate_move_to_grid(array)
+    return nil if array.nil?
+
+    piece_and_destination = [[], []]
+    piece = array[0]
+    move = array[1]
+    piece_and_destination[0] << (8 - piece[1].to_i)
+    piece_and_destination[0] << (piece[0].ord - 97)
+    piece_and_destination[1] << (8 - move[1].to_i)
+    piece_and_destination[1] << (move[0].ord - 97)
+    piece_and_destination
+  end
+
+  def validate_input(piece_and_move)
+    return true if piece_and_move[0][0].match(/[abcdefgh]/) &&
+                   piece_and_move[0][1].to_i.between?(1, 8) &&
+                   piece_and_move[1][0].match(/[abcdefgh]/) &&
+                   piece_and_move[1][1].to_i.between?(1, 8) 
+
+    puts 'Invalid move!'
+    puts ''
+    false
+  end
+
+
 
   private
 
