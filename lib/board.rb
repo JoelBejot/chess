@@ -46,7 +46,11 @@ class Board
 
     if grid[starting_row][starting_column].match(pawn(color))
       valid = pawn_moves(move_array, color, capturing)
-    end
+    elsif grid[starting_row][starting_column].match(rook(color))
+      valid = rook_moves(move_array, color, capturing)
+    end  
+    # valid = pawn_moves(move_array, color, capturing) if grid[starting_row][starting_column].match(pawn(color))
+    # valid = rook_moves(move_array, color, capturing) if grid[starting_row][starting_column].match(rook(color))
     valid
   end
 
