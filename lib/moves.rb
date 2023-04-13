@@ -46,6 +46,8 @@ module Moves
     array_of_squares = []
     if starting_column == ending_column && starting_row > ending_row
       # [starting_row - 1..ending_row].each_with_index { |row, index| array_of_squares[index] << [row, starting_column] }
+      range = (ending_row..starting_row).to_a
+      p range
       i = starting_row
       while i != ending_row
         i -= 1
