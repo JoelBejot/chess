@@ -3,7 +3,6 @@
 require_relative '../lib/game'
 require 'rspec'
 
-
 describe Game do
   describe '#initialize' do
     subject(:start_class) { described_class.new }

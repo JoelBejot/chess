@@ -49,8 +49,10 @@ class Game
   end
 
   def move(turn)
+    valid_input = false
     valid_move = false
     piece_and_move = [nil, nil]
+    move_array = []
     loop do
       if turn.odd?
         (puts "#{player1.name}, which piece would you like to move? (Please enter column then row, ex. 'd2')")
@@ -60,11 +62,15 @@ class Game
       piece_and_move[0] = gets.chomp.downcase
       puts 'Where would you like to move that piece?'
       piece_and_move[1] = gets.chomp.downcase
-      valid_move = validate_input(piece_and_move)
-      break if valid_move
+      puts ''
+      valid_input = valid_input?(piece_and_move)
+      move_array = translate_move_to_grid(piece_and_move)
+      valid_move = board.valid_move?(move_array, turn)
+      break if valid_input && valid_move
+      puts 'Please enter a valid move'
+      puts ''
     end
-    move_array = translate_move_to_grid(piece_and_move)
-    board.validate_move(move_array)
+
     move_array
   end
 
@@ -81,11 +87,11 @@ class Game
     piece_and_destination
   end
 
-  def validate_input(piece_and_move)
+  def valid_input?(piece_and_move)
     return true if piece_and_move[0][0].match(/[abcdefgh]/) &&
                    piece_and_move[0][1].to_i.between?(1, 8) &&
                    piece_and_move[1][0].match(/[abcdefgh]/) &&
-                   piece_and_move[1][1].to_i.between?(1, 8) 
+                   piece_and_move[1][1].to_i.between?(1, 8)
 
     puts 'Invalid move!'
     puts ''

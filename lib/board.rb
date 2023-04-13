@@ -6,6 +6,7 @@ require_relative 'symbols'
 class Board
   include Symbols
   include Enumerable
+  include Moves
 
   attr_accessor :grid
 
@@ -33,12 +34,20 @@ class Board
     grid[move_arr[0][0]][move_arr[0][1]] = "|#{empty_circle}|"
   end
 
-  def validate_move(move_array)
-    p move_array
-    p move_array[0][0]
-    p move_array[0][1]
-    p grid.each
-    # return false if board[move_array[0][0]][move_array[0][1]] == empty_circle
+  def valid_move?(move_array, turn)
+    starting_row = move_array[0][0]
+    ending_row = move_array[1][0]
+    starting_column = move_array[0][1]
+    ending_column = move_array[1][1]
+    color = turn.odd? ? white : black
+    valid = false
+
+    capturing = true unless grid[ending_row][ending_column].match(empty_circle)
+
+    if grid[starting_row][starting_column].match(pawn(color))
+      valid = pawn_moves(move_array, color, capturing)
+    end
+    valid
   end
 
   def add_pieces_to_board

@@ -2,4 +2,3 @@
 
 require_relative '../lib/board'
 require 'rspec'
-
