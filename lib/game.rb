@@ -34,7 +34,7 @@ class Game
       board.display_board
       move_arr = move(turn)
       board.update_board(move_arr)
-      break if turn >= 10
+      break if turn >= 20
     end
   end
 

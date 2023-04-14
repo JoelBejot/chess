@@ -17,9 +17,9 @@ class Board
 
   def display_board
     grid.each_with_index do |row, index|
-      puts "#{8 - index}: #{row.join(' ')}"
+      puts "#{8 - index}: #{row.join('  ')}"
     end
-    puts "    #{('a'..'h').to_a.join('   ')}"
+    puts "    #{('a'..'h').to_a.join('    ')}"
     puts ''
   end
 
@@ -42,15 +42,16 @@ class Board
     color = turn.odd? ? white : black
     valid = false
 
+    # need to add condition so can't capture own piece
     capturing = true unless grid[ending_row][ending_column].match(empty_circle)
 
     if grid[starting_row][starting_column].match(pawn(color))
       valid = pawn_moves(move_array, color, capturing)
     elsif grid[starting_row][starting_column].match(rook(color))
       valid = rook_moves(move_array, color, capturing)
+    elsif grid[starting_row][starting_column].match(king(color))
+      valid = king_moves(move_array, color, capturing)
     end  
-    # valid = pawn_moves(move_array, color, capturing) if grid[starting_row][starting_column].match(pawn(color))
-    # valid = rook_moves(move_array, color, capturing) if grid[starting_row][starting_column].match(rook(color))
     valid
   end
 

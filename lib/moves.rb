@@ -33,32 +33,93 @@ module Moves
   end
 
   def rook_moves(move_array, color, capturing = false)
-    p starting_row = move_array[0][0]
-    p ending_row = move_array[1][0]
-    p starting_column = move_array[0][1]
-    p ending_column = move_array[1][1]
+    starting_row = move_array[0][0]
+    ending_row = move_array[1][0]
+    starting_column = move_array[0][1]
+    ending_column = move_array[1][1]
+    
+    true_array = rook_moving_up(starting_row, ending_row, starting_column, ending_column) if starting_row > ending_row
+    true_array = rook_moving_down(starting_row, ending_row, starting_column, ending_column) if starting_row < ending_row
+    true_array = rook_moving_left(starting_row, ending_row, starting_column, ending_column) if starting_column > ending_column
+    true_array = rook_moving_right(starting_row, ending_row, starting_column, ending_column) if starting_column < ending_column
 
-    # starting row and ending row can be anything between 0 and 7, but column must be the same, OR
-    # starting column and ending column can be anthing between 0 and 7, but row must be the same
-    # AND there can't be anything except empty_circles between the beginning and ending, except if capturing is true
-    # if capturing is true, there can be a piece of opposite color at the ending square
-
-    array_of_squares = []
-    if starting_column == ending_column && starting_row > ending_row
-      # [starting_row - 1..ending_row].each_with_index { |row, index| array_of_squares[index] << [row, starting_column] }
-      range = (ending_row..starting_row).to_a
-      p range
-      i = starting_row
-      while i != ending_row
-        i -= 1
-        # shovel indexes into array of squares
-      end
-    end
-    p array_of_squares
-
-    # if starting_row.between?(0, 7) && ending_row.between?(0, 7) && starting_column == ending_column
+    return true if true_array.all? == true || true_array.nil?
 
     puts 'Invalid move! Please enter a valid move for a rook.'
     false
+  end
+
+  def rook_moving_up(starting_row, ending_row, starting_column, ending_column)
+    array_of_squares = []
+    if starting_column == ending_column && starting_row > ending_row
+      range = (ending_row + 1...starting_row).to_a
+      range.each { |row| array_of_squares << [row, starting_column] }
+
+      true_array = all_empty_cirles(array_of_squares)
+      true_array
+    end
+  end
+
+  def rook_moving_down(starting_row, ending_row, starting_column, ending_column)
+    array_of_squares = []
+    if starting_column == ending_column && starting_row < ending_row
+      range = (starting_row + 1...ending_row).to_a
+      range.each { |row| array_of_squares << [row, starting_column] }
+
+      true_array = all_empty_cirles(array_of_squares)
+      true_array
+    end
+  end
+
+  def rook_moving_left(starting_row, ending_row, starting_column, ending_column)
+    array_of_squares = []
+    if starting_row == ending_row && starting_column > ending_column
+      range = (ending_column + 1...starting_column).to_a
+      range.each { |column| array_of_squares << [starting_row, column] }
+
+      true_array = all_empty_cirles(array_of_squares)
+      true_array
+    end
+  end
+
+  def rook_moving_right(starting_row, ending_row, starting_column, ending_column)
+    array_of_squares = []
+    if starting_row == ending_row && starting_column < ending_column
+      range = (starting_column + 1...ending_column).to_a
+      range.each { |column| array_of_squares << [starting_row, column] }
+
+      true_array = all_empty_cirles(array_of_squares)
+      true_array
+    end
+  end
+
+  def knight_moves(move_array, color, capturing = false)
+
+  end
+
+  def bishop_moves(move_array, color, capturing = false)
+
+  end
+
+  def queen_moves(move_array, color, capturing = false)
+
+  end
+
+  def king_moves(move_array, color, capturing = false)
+    starting_row = move_array[0][0]
+    ending_row = move_array[1][0]
+    starting_column = move_array[0][1]
+    ending_column = move_array[1][1]
+
+    return true if (starting_row - ending_row == 1 || starting_row - ending_row == -1) && grid[ending_row][ending_column].match(empty_circle)
+    return true if (starting_column - ending_column == 1 || starting_column - ending_column == -1) && grid[ending_row][ending_column].match(empty_circle)
+    
+    false
+  end
+
+  def all_empty_cirles(array_of_squares)
+    true_array = []
+    array_of_squares.each { |coord| grid[coord[0]][coord[1]].match(empty_circle) ? true_array << true : true_array << false }
+    true_array
   end
 end
