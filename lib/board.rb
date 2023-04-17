@@ -43,15 +43,16 @@ class Board
     valid = false
 
     # need to add condition so can't capture own piece
-    capturing = true unless grid[ending_row][ending_column].match(empty_circle)
+
 
     if grid[starting_row][starting_column].match(pawn(color))
-      valid = pawn_moves(move_array, color, capturing)
+      valid = pawn_moves(move_array, color)
     elsif grid[starting_row][starting_column].match(rook(color))
       valid = rook_moves(move_array, color, capturing)
     elsif grid[starting_row][starting_column].match(king(color))
       valid = king_moves(move_array, color, capturing)
-    end  
+    end
+    puts "valid = #{valid}"
     valid
   end
 

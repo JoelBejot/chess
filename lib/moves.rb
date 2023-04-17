@@ -1,36 +1,148 @@
 # frozen_string_literal: true
 
-# module for storing all the valid moves
+# methods in this module all return boolean values - whether or not a given move is a valid one.
 module Moves
-  # If a pawn is in its starting position, it can advance one of two squares
+  # If a pawn is in its starting position, it can advance one or two squares
   # Otherwise, it can only advance one square
   # If a pawn is capturing another piece, it can only capture to a forward diagonal
-  def pawn_moves(move_array, color, capturing = false)
+  def pawn_moves(move_array, color)
     starting_row = move_array[0][0]
     ending_row = move_array[1][0]
     starting_column = move_array[0][1]
     ending_column = move_array[1][1]
 
-    if color == white && starting_row == 6
-      return true if (starting_row - ending_row) == 1 || (starting_row - ending_row) == 2
-    elsif color == black && starting_row == 1
-      return true if (starting_row - ending_row) == -1 || (starting_row - ending_row) == -2
-    elsif color == white && starting_row != 6
-      return true if (starting_row - ending_row) == 1
-    elsif color == black && starting_row != 1
-      return true if (starting_row - ending_row) == -1
-    end
+    first = first_move?(color, starting_row)
+    clear = clear_path?(starting_row, starting_column, ending_row, ending_column)
 
-    if color == white && capturing
-      return true if ((starting_row - ending_row) == -1 && (starting_column - ending_column) == -1) ||
-                     ((starting_row - ending_row) == -1 && (starting_column - ending_column) == 1)
-    elsif color == black && capturing
-      return true if ((starting_row - ending_row) == 1 && (starting_column - ending_column) == -1) ||
-                     ((starting_row - ending_row) == 1 && (starting_column - ending_column) == 1)
-    end
+    return true if first && one_or_two_ahead?(color, starting_row, ending_row)
+
     puts 'Invalid move! Please enter a valid move for a pawn.'
     false
   end
+
+  def first_move?(color, starting_row)
+    return true if color == white && starting_row == 6
+    return true if color == black && starting_row == 1
+
+    false
+  end
+
+  def one_or_two_ahead?(color, starting_row, ending_row)
+    return true if color == white && (starting_row - ending_row == 1 || starting_row - ending_row == 2)
+    return true if color == black && (starting_row - ending_row == -1 || starting_row - ending_row == -2)
+
+    false
+  end
+
+  def clear_path?(starting_row, starting_column, ending_row, ending_column)
+    row_range = get_row_range(starting_row, ending_row)
+    column_range = get_column_range(starting_column, ending_column)
+
+    p "row range #{row_range}"
+    p "column range #{column_range}"
+
+    array_length_match(row_range, column_range)
+
+
+    p "row range #{row_range}"
+    p "column range #{column_range}"
+
+    # make magic happen - combine row and column ranges
+    # see if anything but empty_circle is at that grid spot
+
+
+  end
+ 
+  def get_row_range(starting_row, ending_row)
+    starting_row <= ending_row ? (starting_row + 1..ending_row).to_a : (ending_row..starting_row - 1).to_a
+  end
+
+  def get_column_range(starting_column, ending_column)
+    starting_column <= ending_column ? (starting_column..ending_column).to_a : (ending_column..starting_column - 1).to_a
+  end
+
+  def array_length_match(row_range, column_range)
+    if column_range.length == 1 && row_range.length > 1
+      row_range.each_index { |index| column_range[index] = column_range[0] }
+    elsif row_range.length == 1 && column_range.length > 1
+      column_range.each_index { |index| row_range[index] = row_range[0] }
+    end
+  end
+
+
+    # if starting_column == ending_column && starting_row > ending_row
+    #   range = (ending_row + 1...starting_row).to_a
+    #   range.each { |row| array_of_squares << [row, starting_column] }
+
+    #   true_array = all_empty_cirles(array_of_squares)
+    #   true_array
+    # end
+  
+
+  # def pawn_capturing_conditions(color, starting_row, ending_row, starting_column, ending_column)
+  #   if color == white && grid[ending_row][ending_column].match(/black/) &&
+  #      (white_pawn_diagonal_left(starting_row, ending_row, starting_column, ending_column) ||
+  #      white_pawn_diagonal_right(starting_row, ending_row, starting_column, ending_column))
+  #     return true
+  #   elsif color == black && grid[ending_row][ending_column].match(/white/) &&
+  #         (black_pawn_diagonal_left(starting_row, ending_row, starting_column, ending_column) ||
+  #         black_pawn_diagonal_right(starting_row, ending_row, starting_column, ending_column))
+  #     return true
+  #   end
+
+  #   false
+  # end
+
+  # def white_pawn_diagonal_left(starting_row, ending_row, starting_column, ending_column)
+  #   return true if (starting_row - ending_row) == -1 && (starting_column - ending_column) == -1
+
+  #   false
+  # end
+
+  # def white_pawn_diagonal_right(starting_row, ending_row, starting_column, ending_column)
+  #   return true if (starting_row - ending_row) == -1 && (starting_column - ending_column) == 1
+
+  #   false
+  # end
+
+  # def black_pawn_diagonal_left(starting_row, ending_row, starting_column, ending_column)
+  #   return true if (starting_row - ending_row) == 1 && (starting_column - ending_column) == -1
+
+  #   false
+  # end
+
+  # def black_pawn_diagonal_right(starting_row, ending_row, starting_column, ending_column)
+  #   return true if (starting_row - ending_row) == 1 && (starting_column - ending_column) == 1
+
+  #   false
+  # end
+
+  # def white_pawn_moves(starting_row, ending_row, starting_column, ending_column, capturing)
+  #   return true if capturing && (white_pawn_diagonal_left(starting_row, ending_row, starting_column, ending_column) ||
+  #                  white_pawn_diagonal_right(starting_row, ending_row, starting_column, ending_column))
+  #   return true if starting_row == 6 && ((starting_row - ending_row) == 1 || (starting_row - ending_row) == 2)
+  #   return true if starting_row != 6 && (starting_row - ending_row) == 1
+  #   # return true if capturing && pawn_capturing_moves(white, starting_row, ending_row, starting_column, ending_column)
+
+  #   false
+  # end
+
+  # def black_pawn_moves(starting_row, ending_row, starting_column, ending_column, capturing)
+  #   return true if starting_row == 1 && ((starting_row - ending_row) == -1 || (starting_row - ending_row) == -2) && capturing == false
+  #   return true if starting_row != 1 && (starting_row - ending_row) == -1 && capturing == false
+  #   # return true if capturing && pawn_capturing_moves(black, starting_row, ending_row, starting_column, ending_column)
+
+  #   false
+  # end
+
+  # def pawn_capturing_moves(color, starting_row, ending_row, starting_column, ending_column)
+  #   return true if color == white && ((starting_row - ending_row) == -1 && (starting_column - ending_column) == -1) ||
+  #                  ((starting_row - ending_row) == -1 && (starting_column - ending_column) == 1)
+  #   return true if color == black && ((starting_row - ending_row) == 1 && (starting_column - ending_column) == -1) ||
+  #                  ((starting_row - ending_row) == 1 && (starting_column - ending_column) == 1)
+
+  #   false
+  # end
 
   def rook_moves(move_array, color, capturing = false)
     starting_row = move_array[0][0]
