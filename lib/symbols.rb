@@ -2,6 +2,10 @@
 
 # module for all the different symbols needed for the game
 module Symbols
+  def symbols_array(color)
+    [pawn(color), rook(color), knight(color), bishop(color), queen(color), king(color)]
+  end
+
   def white
     "\u{25A1}"
   end
