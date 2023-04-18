@@ -13,8 +13,14 @@ module Moves
 
     first = first_move?(color, starting_row)
     clear = clear_path?(starting_row, starting_column, ending_row, ending_column)
+    capture = capturing?(color, starting_row, starting_column, ending_row, ending_column)
+    p "capture = #{capture}"
+    p "one or two ahead = #{one_or_two_ahead?(color, starting_row, ending_row)}"
+    p "clear = #{clear}"
 
-    return true if first && one_or_two_ahead?(color, starting_row, ending_row)
+    return true if first && clear && one_or_two_ahead?(color, starting_row, ending_row)
+    return true if !first && clear && one_ahead?(color, starting_row, ending_row)
+    return true if capture && valid_diagonal?
 
     puts 'Invalid move! Please enter a valid move for a pawn.'
     false
@@ -34,23 +40,19 @@ module Moves
     false
   end
 
+  def one_ahead?(color, starting_row, ending_row)
+    return true if color == white && starting_row - ending_row == 1
+    return true if color == black && starting_row - ending_row == -1
+
+    false
+  end
+
   def clear_path?(starting_row, starting_column, ending_row, ending_column)
     row_range = get_row_range(starting_row, ending_row)
     column_range = get_column_range(starting_column, ending_column)
 
-    p "row range #{row_range}"
-    p "column range #{column_range}"
-
     array_length_match(row_range, column_range)
-
-
-    p "row range #{row_range}"
-    p "column range #{column_range}"
-
-    # make magic happen - combine row and column ranges
-    # see if anything but empty_circle is at that grid spot
-
-
+    all_clear?(row_range, column_range)
   end
  
   def get_row_range(starting_row, ending_row)
@@ -67,6 +69,53 @@ module Moves
     elsif row_range.length == 1 && column_range.length > 1
       column_range.each_index { |index| row_range[index] = row_range[0] }
     end
+  end
+
+  def all_clear?(row_range, column_range)
+    array = []
+
+    row_range.each_index do |index|
+      array[index] = true if grid[row_range[index]][column_range[index]].match(empty_circle)      
+    end
+
+    return true if array.all?(true)
+
+    false
+  end
+
+  def capturing?(color, starting_row, starting_column, ending_row, ending_column)
+    row_range = get_row_range(starting_row, ending_row)
+    column_range = get_column_range(starting_column, ending_column)
+
+    array_length_match(row_range, column_range)
+    return opponent_at_end?(color, row_range, column_range)
+  end
+
+  def opponent_at_end?(color, row_range, column_range)
+    array = []
+
+    row_range.each_index do |index|
+      array[index] = true if grid[row_range[index]][column_range[index]].match(empty_circle)      
+    end
+
+    if color == white && grid[row_range[-1]][column_range[-1]].match(/(black)/)
+      array[-1] = true
+    elsif color == black && grid[row_range[-1]][column_range[-1]].match(/(white)/)
+      array[-1] = true
+    else
+      array[-1] = false
+    end
+
+    p "opponent at end array = #{array}"
+    # got error when try to make a bad move pawn takes one directly in front
+
+    return true if array.all?(true)
+
+    false
+  end
+
+  def valid_diagonal?
+    true
   end
 
 
