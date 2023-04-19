@@ -17,7 +17,27 @@ module Moves
     return true if !first && !capture && clear && one_ahead?(color, starting_row, ending_row)
     return true if capture && valid_diagonal?(color, starting_row, starting_column, ending_row, ending_column)
 
+    p "capture = #{capture}"
+    p "valid diagonal = #{valid_diagonal?(color, starting_row, starting_column, ending_row, ending_column)}"
+
     puts 'Invalid move! Please enter a valid move for a pawn.'
+    false
+  end
+
+  def rook_moves(move_array, color, capturing = false)
+    starting_row = move_array[0][0]
+    ending_row = move_array[1][0]
+    starting_column = move_array[0][1]
+    ending_column = move_array[1][1]
+    
+    true_array = rook_moving_up(starting_row, ending_row, starting_column, ending_column) if starting_row > ending_row
+    true_array = rook_moving_down(starting_row, ending_row, starting_column, ending_column) if starting_row < ending_row
+    true_array = rook_moving_left(starting_row, ending_row, starting_column, ending_column) if starting_column > ending_column
+    true_array = rook_moving_right(starting_row, ending_row, starting_column, ending_column) if starting_column < ending_column
+
+    return true if true_array.all? == true || true_array.nil?
+
+    puts 'Invalid move! Please enter a valid move for a rook.'
     false
   end
 
@@ -103,15 +123,18 @@ module Moves
     column_range = get_column_range(starting_column, ending_column)
 
     array_length_match(row_range, column_range)
-    opponent_at_end?(color, row_range, column_range)
+    p opponent_at_end?(color, row_range, column_range)
   end
 
   def opponent_at_end?(color, row_range, column_range)
     array = empty_circle_array(row_range, column_range)
+    p array
     array = change_array_end(array, color, row_range, column_range)
 
+    p array
+
     return false if array.empty?
-    return true if array.all?(true)
+    return true if array[-1] == true
 
     false
   end
@@ -120,15 +143,21 @@ module Moves
     array = [false]
 
     row_range.each_index do |index|
-      array[index] = true if grid[row_range[index]][column_range[index]].match(empty_circle)
+      array[index] = grid[row_range[index]][column_range[index]].match(empty_circle) ? true : false
     end
     array
   end
 
   def change_array_end(array, color, row_range, column_range)
-    if color == white && symbols_array(black).any? { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }
+    p "array = #{array}"
+    p "color = #{color}"
+    p "row range = #{row_range}"
+    p "column range = #{column_range}"
+    p symbols_array(black).any? { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }
+    p color == white
+    if color == white && symbols_array(black).any? # { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }
       array[-1] = true
-    elsif color == black && symbols_array(white).any? { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }
+    elsif color == black && symbols_array(white).any? # { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }
       array[-1] = true
     else
       array[-1] = false
