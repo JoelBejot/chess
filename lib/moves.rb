@@ -85,7 +85,7 @@ module Moves
     column_range = get_column_range(starting_column, ending_column)
 
     array_length_match(row_range, column_range)
-    all_clear?(row_range, column_range, starting_row, ending_row)
+    all_clear?(row_range, column_range, starting_row, ending_row, starting_column, ending_column)
   end
 
   def get_row_range(starting_row, ending_row)
@@ -104,14 +104,17 @@ module Moves
     end
   end
 
-  def all_clear?(row_range, column_range, starting_row, ending_row)
+  def all_clear?(row_range, column_range, starting_row, ending_row, starting_column, ending_column)
     array = []
 
+    row_range.reverse! if starting_row > ending_row
+    column_range.reverse! if starting_column > ending_column
+  
     row_range.each_index do |index|
       array[index] = grid[row_range[index]][column_range[index]].match(empty_circle) ? true : false
     end
 
-    starting_row < ending_row ? array.shift : array.pop
+    array.shift
 
     return true if array.all?(true)
 
@@ -123,47 +126,85 @@ module Moves
     column_range = get_column_range(starting_column, ending_column)
 
     array_length_match(row_range, column_range)
-    p opponent_at_end?(color, row_range, column_range)
+    p opponent_at_end?(color, row_range, column_range, starting_row, ending_row, starting_column, ending_column)
   end
 
-  def opponent_at_end?(color, row_range, column_range)
-    array = empty_circle_array(row_range, column_range)
-    p array
-    array = change_array_end(array, color, row_range, column_range)
+  def opponent_at_end?(color, row_range, column_range, starting_row, ending_row, starting_column, ending_column)
+    array = []
 
-    p array
+    row_range.reverse! if starting_row > ending_row
+    column_range.reverse! if starting_column > ending_column
 
-    return false if array.empty?
-    return true if array[-1] == true
+    p "opponent row range = #{row_range}"
+    p "opponent column range = #{column_range}"
+   
+    p "color = #{color}"
+
+    if color == white
+      row_range.each_index do |index|
+        p "grid[row_range[index]][column_range[index]].match(empty_circle) #{grid[row_range[index]][column_range[index]].match(empty_circle)}"
+        p "any black symbols? #{grid[row_range[index]][column_range[index]].include?(symbols_array(black).to_s)}"
+        p "any black symbols? #{symbols_array(white).select { |piece| piece.match(grid[row_range[index]][column_range[index]])}}"
+        array[index] = if !grid[row_range[index]][column_range[index]].match(empty_circle) 
+                          # grid[row_range[index]][column_range[index]].match(symbols_array(black))
+                         true
+                       else
+                         false
+                       end
+      end
+    else
+      row_range.each_index do |index|
+        p "grid[row_range[index]][column_range[index]].match(empty_circle) #{grid[row_range[index]][column_range[index]].match(empty_circle)}"
+        p "#{symbols_array(black)}"
+        array[index] = if !grid[row_range[index]][column_range[index]].match(empty_circle) 
+                          # grid[row_range[index]][column_range[index]].match(symbols_array(white))
+                         true
+                       else
+                         false
+                       end
+      end
+    end
+
+    p "opponent at end before shift/pop = #{array}"
+
+    array.shift
+
+    p "opponent at end after = #{array}"
+
+    return true if array.all?(true)
 
     false
+
   end
 
-  def empty_circle_array(row_range, column_range)
-    array = [false]
+  # def empty_circle_array(row_range, column_range)
+  #   array = [false]
 
-    row_range.each_index do |index|
-      array[index] = grid[row_range[index]][column_range[index]].match(empty_circle) ? true : false
-    end
-    array
-  end
+  #   p "row range = #{row_range}"
+  #   p "column range = #{column_range}"
 
-  def change_array_end(array, color, row_range, column_range)
-    p "array = #{array}"
-    p "color = #{color}"
-    p "row range = #{row_range}"
-    p "column range = #{column_range}"
-    p symbols_array(black).any? { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }
-    p color == white
-    if color == white && symbols_array(black).any? # { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }
-      array[-1] = true
-    elsif color == black && symbols_array(white).any? # { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }
-      array[-1] = true
-    else
-      array[-1] = false
-    end
-    array
-  end
+  #   row_range.each_index do |index|
+  #     array[index] = grid[row_range[index]][column_range[index]].match(empty_circle) ? true : false
+  #   end
+  #   array
+  # end
+
+  # def change_array_end(array, color, row_range, column_range)
+  #   p "array = #{array}"
+  #   p "color = #{color}"
+  #   p "row range = #{row_range}"
+  #   p "column range = #{column_range}"
+  #   p "any black symbols? = #{symbols_array(black).any? { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }}"
+    
+  #   if color == white && symbols_array(black).any? # { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }
+  #     array[-1] = true
+  #   elsif color == black && symbols_array(white).any? # { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }
+  #     array[-1] = true
+  #   else
+  #     array[-1] = false
+  #   end
+  #   array
+  # end
 
 
 

@@ -12,7 +12,7 @@ class Game
   include Symbols
   include Moves
 
-  attr_accessor :player1, :player2, :board
+  attr_accessor :player1, :player2, :board, :turn
   attr_reader :color_array
 
   def initialize
@@ -20,6 +20,7 @@ class Game
     @player2 = Player.new
     @color_array = [white, black]
     @board = Board.new
+    @turn = 0
   end
 
   def game
@@ -28,13 +29,13 @@ class Game
     # chess_rules.rules
     # set_player_name
     # who_goes_first
-    turn = 0
+    # turn = 0
     loop do
-      turn += 1
+      @turn += 1
       board.display_board
       move_arr = move(turn)
       board.update_board(move_arr)
-      break if turn >= 20
+      break if @turn >= 20
     end
   end
 
