@@ -12,7 +12,7 @@ class Game
   include Symbols
   include Moves
 
-  attr_accessor :player1, :player2, :board, :turn
+  attr_accessor :player1, :player2, :board, :turn, :piece, :destination, :user_piece, :user_destination
   attr_reader :color_array
 
   def initialize
@@ -21,6 +21,10 @@ class Game
     @color_array = [white, black]
     @board = Board.new
     @turn = 0
+    @piece = [0, 0]
+    @destination = [0, 0]
+    @user_piece = String.new
+    @user_destination = String.new
   end
 
   def game
@@ -33,8 +37,8 @@ class Game
     loop do
       @turn += 1
       board.display_board
-      move_arr = move(turn)
-      board.update_board(move_arr)
+      move(@turn)
+      board.update_board(@piece, @destination)
       break if @turn >= 20
     end
   end
@@ -50,13 +54,15 @@ class Game
   end
 
   def move(turn)
-    piece_and_move = [nil, nil]
-    move_array = []
+    move_array = [nil, nil]
+
     loop do
-      valid_input = get_move(turn, piece_and_move)
-      move_array = translate_move_to_grid(piece_and_move)
-      valid_move = board.valid_move?(move_array, turn)
-      break if valid_input && valid_move
+      valid_input = get_move(turn, @user_piece, @user_destination)
+
+      @piece = translate_piece_to_grid(@user_piece)
+      @destination = translate_destination_to_grid(@user_destination)
+      break if valid_input && board.valid_move?(@piece, @destination, turn)
+
       puts 'Please enter a valid move'
       puts ''
     end
@@ -64,50 +70,53 @@ class Game
     move_array
   end
 
-  def get_move(turn, piece_and_move)
+  def get_move(turn, user_piece, user_destination)
     loop do
       if turn.odd?
         (puts "#{player1.name}, which piece would you like to move? (Please enter column then row, ex. 'd2')")
       else
         (puts "#{player2.name}, which piece would you like to move? (Please enter column then row, ex. 'd2')")
       end
-      piece_and_move[0] = gets.chomp.downcase
+      @user_piece = gets.chomp.downcase
       puts 'Where would you like to move that piece?'
-      piece_and_move[1] = gets.chomp.downcase
+      @user_destination = gets.chomp.downcase
       puts ''
-      valid_input = valid_input?(piece_and_move)
-      return true if valid_input
+      return true if valid_input?(@user_piece, @user_destination)
+
       puts "Invalid move! Please enter column then row, ex. 'd2'"
     end
   end
 
-  def translate_move_to_grid(array)
-    return nil if array.nil?
+  def translate_piece_to_grid(string)
+    return nil if string.nil?
 
-    piece_and_destination = [[], []]
-    piece = array[0]
-    move = array[1]
-    piece_and_destination[0] << (8 - piece[1].to_i)
-    piece_and_destination[0] << (piece[0].ord - 97)
-    piece_and_destination[1] << (8 - move[1].to_i)
-    piece_and_destination[1] << (move[0].ord - 97)
-    piece_and_destination
+    @piece[0] = (8 - string[1].to_i)
+    @piece[1] = (string[0].ord - 97)
+
+    @piece
   end
 
-  def valid_input?(piece_and_move)
-    return false if piece_and_move[0].empty? || piece_and_move[1].empty?
+  def translate_destination_to_grid(string)
+    return nil if string.nil?
 
-    return true if piece_and_move[0][0].match(/[abcdefgh]/) &&
-                   piece_and_move[0][1].to_i.between?(1, 8) &&
-                   piece_and_move[1][0].match(/[abcdefgh]/) &&
-                   piece_and_move[1][1].to_i.between?(1, 8)
+    @destination[0] = (8 - string[1].to_i)
+    @destination[1] = (string[0].ord - 97)
+
+    @destination
+  end
+
+  def valid_input?(piece, destination)
+    return false if piece.empty? || destination.empty?
+
+    return true if piece[0].match(/[abcdefgh]/) &&
+                   piece[1].to_i.between?(1, 8) &&
+                   destination[0].match(/[abcdefgh]/) &&
+                   destination[1].to_i.between?(1, 8)
 
     puts 'Invalid move!'
     puts ''
     false
   end
-
-
 
   private
 

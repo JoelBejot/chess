@@ -3,22 +3,14 @@
 # methods in this module all return boolean values - whether or not a given move is a valid one.
 module Moves
   # Reader method for determining if pawn move is valid
-  def pawn_moves(move_array, color)
-    starting_row = move_array[0][0]
-    ending_row = move_array[1][0]
-    starting_column = move_array[0][1]
-    ending_column = move_array[1][1]
+  def pawn_moves(color, piece, destination)
+    first = first_move?(color, piece)
+    clear = clear_path?(piece, destination)
+    capture = capturing?(color, piece, destination)
 
-    first = first_move?(color, starting_row)
-    clear = clear_path?(starting_row, starting_column, ending_row, ending_column)
-    capture = capturing?(color, starting_row, starting_column, ending_row, ending_column)
-
-    return true if first && clear && one_or_two_ahead?(color, starting_row, ending_row)
-    return true if !first && !capture && clear && one_ahead?(color, starting_row, ending_row)
-    return true if capture && valid_diagonal?(color, starting_row, starting_column, ending_row, ending_column)
-
-    p "capture = #{capture}"
-    p "valid diagonal = #{valid_diagonal?(color, starting_row, starting_column, ending_row, ending_column)}"
+    return true if first && clear && one_or_two_ahead?(color, piece[0], destination[0])
+    return true if !first && !capture && clear && one_ahead?(color, piece[0], destination[0])
+    return true if capture && valid_diagonal?(color, piece, destination)
 
     puts 'Invalid move! Please enter a valid move for a pawn.'
     false
@@ -29,7 +21,7 @@ module Moves
     ending_row = move_array[1][0]
     starting_column = move_array[0][1]
     ending_column = move_array[1][1]
-    
+
     true_array = rook_moving_up(starting_row, ending_row, starting_column, ending_column) if starting_row > ending_row
     true_array = rook_moving_down(starting_row, ending_row, starting_column, ending_column) if starting_row < ending_row
     true_array = rook_moving_left(starting_row, ending_row, starting_column, ending_column) if starting_column > ending_column
@@ -42,9 +34,9 @@ module Moves
   end
 
   # Helper methods for pawn moves
-  def first_move?(color, starting_row)
-    return true if color == white && starting_row == 6
-    return true if color == black && starting_row == 1
+  def first_move?(color, piece)
+    return true if color == white && piece[0] == 6
+    return true if color == black && piece[0] == 1
 
     false
   end
@@ -63,16 +55,16 @@ module Moves
     false
   end
 
-  def valid_diagonal?(color, starting_row, starting_column, ending_row, ending_column)
+  def valid_diagonal?(color, piece, destination)
     if color == white &&
-       starting_row - ending_row == 1 &&
-       (starting_column - ending_column == 1 ||
-       starting_column - ending_column == -1)
+       piece[0] - destination[0] == 1 &&
+       (piece[1] - destination[1] == 1 ||
+        piece[1] - destination[1] == -1)
       true
     elsif color == black &&
-          starting_row - ending_row == -1 &&
-          (starting_column - ending_column == 1 ||
-          starting_column - ending_column == -1)
+          piece[0] - destination[0] == -1 &&
+          (piece[1] - destination[1] == 1 ||
+          piece[1] - destination[1] == -1)
       true
     else
       false
@@ -80,12 +72,12 @@ module Moves
   end
 
   # Helper methods for all moves
-  def clear_path?(starting_row, starting_column, ending_row, ending_column)
-    row_range = get_row_range(starting_row, ending_row)
-    column_range = get_column_range(starting_column, ending_column)
+  def clear_path?(piece, destination)
+    row_range = get_row_range(piece[0], destination[0])
+    column_range = get_column_range(piece[1], destination[1])
 
     array_length_match(row_range, column_range)
-    all_clear?(row_range, column_range, starting_row, ending_row, starting_column, ending_column)
+    all_clear?(row_range, column_range, piece, destination)
   end
 
   def get_row_range(starting_row, ending_row)
@@ -104,12 +96,12 @@ module Moves
     end
   end
 
-  def all_clear?(row_range, column_range, starting_row, ending_row, starting_column, ending_column)
+  def all_clear?(row_range, column_range, piece, destination)
     array = []
 
-    row_range.reverse! if starting_row > ending_row
-    column_range.reverse! if starting_column > ending_column
-  
+    row_range.reverse! if piece[0] > destination[0]
+    column_range.reverse! if piece[1] > destination[1]
+
     row_range.each_index do |index|
       array[index] = grid[row_range[index]][column_range[index]].match(empty_circle) ? true : false
     end
@@ -121,32 +113,24 @@ module Moves
     false
   end
 
-  def capturing?(color, starting_row, starting_column, ending_row, ending_column)
-    row_range = get_row_range(starting_row, ending_row)
-    column_range = get_column_range(starting_column, ending_column)
+  def capturing?(color, piece, destination)
+    row_range = get_row_range(piece[0], destination[0])
+    column_range = get_column_range(piece[1], destination[1])
 
     array_length_match(row_range, column_range)
-    p opponent_at_end?(color, row_range, column_range, starting_row, ending_row, starting_column, ending_column)
+    opponent_at_end?(color, row_range, column_range, piece, destination)
   end
 
-  def opponent_at_end?(color, row_range, column_range, starting_row, ending_row, starting_column, ending_column)
+  def opponent_at_end?(color, row_range, column_range, piece, destination)
     array = []
 
-    row_range.reverse! if starting_row > ending_row
-    column_range.reverse! if starting_column > ending_column
-
-    p "opponent row range = #{row_range}"
-    p "opponent column range = #{column_range}"
-   
-    p "color = #{color}"
+    row_range.reverse! if piece[0] > destination[0]
+    column_range.reverse! if piece[1] > destination[1]
 
     if color == white
       row_range.each_index do |index|
-        p "grid[row_range[index]][column_range[index]].match(empty_circle) #{grid[row_range[index]][column_range[index]].match(empty_circle)}"
-        p "any black symbols? #{grid[row_range[index]][column_range[index]].include?(symbols_array(black).to_s)}"
-        p "any black symbols? #{symbols_array(white).select { |piece| piece.match(grid[row_range[index]][column_range[index]])}}"
-        array[index] = if !grid[row_range[index]][column_range[index]].match(empty_circle) 
-                          # grid[row_range[index]][column_range[index]].match(symbols_array(black))
+        array[index] = if !grid[row_range[index]][column_range[index]].match(empty_circle) &&
+                          black_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }
                          true
                        else
                          false
@@ -154,59 +138,19 @@ module Moves
       end
     else
       row_range.each_index do |index|
-        p "grid[row_range[index]][column_range[index]].match(empty_circle) #{grid[row_range[index]][column_range[index]].match(empty_circle)}"
-        p "#{symbols_array(black)}"
-        array[index] = if !grid[row_range[index]][column_range[index]].match(empty_circle) 
-                          # grid[row_range[index]][column_range[index]].match(symbols_array(white))
+        array[index] = if !grid[row_range[index]][column_range[index]].match(empty_circle) &&
+                          white_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }
                          true
                        else
                          false
                        end
       end
     end
-
-    p "opponent at end before shift/pop = #{array}"
-
     array.shift
-
-    p "opponent at end after = #{array}"
-
     return true if array.all?(true)
 
     false
-
   end
-
-  # def empty_circle_array(row_range, column_range)
-  #   array = [false]
-
-  #   p "row range = #{row_range}"
-  #   p "column range = #{column_range}"
-
-  #   row_range.each_index do |index|
-  #     array[index] = grid[row_range[index]][column_range[index]].match(empty_circle) ? true : false
-  #   end
-  #   array
-  # end
-
-  # def change_array_end(array, color, row_range, column_range)
-  #   p "array = #{array}"
-  #   p "color = #{color}"
-  #   p "row range = #{row_range}"
-  #   p "column range = #{column_range}"
-  #   p "any black symbols? = #{symbols_array(black).any? { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }}"
-    
-  #   if color == white && symbols_array(black).any? # { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }
-  #     array[-1] = true
-  #   elsif color == black && symbols_array(white).any? # { |symbol| grid[row_range[-1]][column_range[-1]].include?(symbol) }
-  #     array[-1] = true
-  #   else
-  #     array[-1] = false
-  #   end
-  #   array
-  # end
-
-
 
   def rook_moves(move_array, color, capturing = false)
     starting_row = move_array[0][0]
@@ -295,7 +239,7 @@ module Moves
 
   def all_empty_cirles(array_of_squares)
     true_array = []
-    array_of_squares.each { |coord| grid[coord[0]][coord[1]].match(empty_circle) ? true_array << true : true_array << false }
+    array_of_squares.each { |coord| true_array << grid[coord[0]][coord[1]].match(empty_circle) ? true : false }
     true_array
   end
 end

@@ -2,8 +2,12 @@
 
 # module for all the different symbols needed for the game
 module Symbols
-  def symbols_array(color)
-    [pawn(color), rook(color), knight(color), bishop(color), queen(color), king(color)]
+  def white_symbols_array
+    [pawn(white), rook(white), knight(white), bishop(white), queen(white), king(white)]
+  end
+
+  def black_symbols_array
+    [pawn(black), rook(black), knight(black), bishop(black), queen(black), king(black)]
   end
 
   def white

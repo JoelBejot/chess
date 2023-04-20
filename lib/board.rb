@@ -29,30 +29,21 @@ class Board
     end
   end
 
-  def update_board(move_arr)
-    grid[move_arr[1][0]][move_arr[1][1]] = grid[move_arr[0][0]][move_arr[0][1]]
-    grid[move_arr[0][0]][move_arr[0][1]] = "|#{empty_circle}|"
+  def update_board(piece, destination)
+    grid[destination[0]][destination[1]] = grid[piece[0]][piece[1]]
+    grid[piece[0]][piece[1]] = "|#{empty_circle}|"
   end
 
-  def valid_move?(move_array, turn)
-    starting_row = move_array[0][0]
-    ending_row = move_array[1][0]
-    starting_column = move_array[0][1]
-    ending_column = move_array[1][1]
+  def valid_move?(piece, destination, turn)
     color = turn.odd? ? white : black
-    valid = false
+    valid = if grid[piece[0]][piece[1]].match(pawn(color))
+              pawn_moves(color, piece, destination)
+            elsif grid[piece[0]][piece[1]].match(rook(color))
+              rook_moves(color, piece, destination)
+            elsif grid[piece[0]][piece[1]].match(king(color))
+              king_moves(color, piece, destination)
+            end
 
-    # need to add condition so can't capture own piece
-
-
-    if grid[starting_row][starting_column].match(pawn(color))
-      valid = pawn_moves(move_array, color)
-    elsif grid[starting_row][starting_column].match(rook(color))
-      valid = rook_moves(move_array, color, capturing)
-    elsif grid[starting_row][starting_column].match(king(color))
-      valid = king_moves(move_array, color, capturing)
-    end
-    puts "valid = #{valid}"
     valid
   end
 
@@ -72,7 +63,11 @@ class Board
   end
 
   def assign_pawns(color)
-    color == white ? grid[6].each_index { |index| grid[6][index] = "|#{pawn(color)}|" } : grid[1].each_index { |index| grid[1][index] = "|#{pawn(color)}|" }
+    if color == white
+      grid[6].each_index { |index| grid[6][index] = "|#{pawn(color)}|" }
+    else
+      grid[1].each_index { |index| grid[1][index] = "|#{pawn(color)}|" }
+    end
   end
 
   def assign_power_pieces(color)
@@ -122,8 +117,3 @@ class Board
     end
   end
 end
-
-# board = Board.new
-# board.display_board
-# board.add_pieces_to_board
-# board.display_board
