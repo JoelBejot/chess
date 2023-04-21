@@ -68,7 +68,7 @@ module Moves
 
     array.shift
 
-    return true if array.all?(true)
+    return true if array.all?(true) || array.nil?
 
     false
   end
@@ -77,45 +77,40 @@ module Moves
     row_range = get_row_range(piece[0], destination[0])
     column_range = get_column_range(piece[1], destination[1])
 
+
     array_length_match(row_range, column_range)
-    opponent_at_end?(color, row_range, column_range, piece, destination)
+    if piece[0] > destination[0]
+      clear = all_clear?(row_range[1..-1], column_range[1..-1], piece, destination)
+    else
+      clear = all_clear?(row_range[0..-2], column_range[0..-2], piece, destination)
+    end
+    return true if clear && opponent_at_end?(color, destination)
+  
   end
 
-  def opponent_at_end?(color, row_range, column_range, piece, destination)
+  def opponent_at_end?(color, destination)
     array = []
 
-    row_range.reverse! if piece[0] > destination[0]
-    column_range.reverse! if piece[1] > destination[1]
-
     if color == white
-      row_range.each_index do |index|
-        p "black symbols? #{black_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }}"
-        array[index] = if grid[row_range[index]][column_range[index]].match(empty_circle) ||
-                          black_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }
-                         true
-                       else
-                         false
-                       end
-      end
+      p "black symbols? #{black_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }}"
+      array[0] = if black_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }
+                   true
+                 else
+                   false
+                 end
     else
-      row_range.each_index do |index|
-        p "white symbols? #{white_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }}"
-        array[index] = if grid[row_range[index]][column_range[index]].match(empty_circle) ||
-                          white_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }
-                         true
-                       else
-                         false
-                       end
-      end
+      p "white symbols? #{white_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }}"
+      array[0] = if white_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }
+                   true
+                 else
+                   false
+                 end
     end
-    p "array before shift #{array}"
-    array.shift
-    p "array after shift #{array}"
-    return true if array.all?(true)
+
+    return true if array[0] == true
 
     false
   end
-
 
   # Helper methods for pawn moves
   def first_move?(color, piece)
@@ -175,67 +170,7 @@ module Moves
   end
 
 
-  # def rook_moves(move_array, color, capturing = false)
-  #   starting_row = move_array[0][0]
-  #   ending_row = move_array[1][0]
-  #   starting_column = move_array[0][1]
-  #   ending_column = move_array[1][1]
-    
-  #   true_array = rook_moving_up(starting_row, ending_row, starting_column, ending_column) if starting_row > ending_row
-  #   true_array = rook_moving_down(starting_row, ending_row, starting_column, ending_column) if starting_row < ending_row
-  #   true_array = rook_moving_left(starting_row, ending_row, starting_column, ending_column) if starting_column > ending_column
-  #   true_array = rook_moving_right(starting_row, ending_row, starting_column, ending_column) if starting_column < ending_column
-
-  #   return true if true_array.all? == true || true_array.nil?
-
-  #   puts 'Invalid move! Please enter a valid move for a rook.'
-  #   false
-  # end
-
-  def rook_moving_up(starting_row, ending_row, starting_column, ending_column)
-    array_of_squares = []
-    if starting_column == ending_column && starting_row > ending_row
-      range = (ending_row + 1...starting_row).to_a
-      range.each { |row| array_of_squares << [row, starting_column] }
-
-      true_array = all_empty_cirles(array_of_squares)
-      true_array
-    end
-  end
-
-  def rook_moving_down(starting_row, ending_row, starting_column, ending_column)
-    array_of_squares = []
-    if starting_column == ending_column && starting_row < ending_row
-      range = (starting_row + 1...ending_row).to_a
-      range.each { |row| array_of_squares << [row, starting_column] }
-
-      true_array = all_empty_cirles(array_of_squares)
-      true_array
-    end
-  end
-
-  def rook_moving_left(starting_row, ending_row, starting_column, ending_column)
-    array_of_squares = []
-    if starting_row == ending_row && starting_column > ending_column
-      range = (ending_column + 1...starting_column).to_a
-      range.each { |column| array_of_squares << [starting_row, column] }
-
-      true_array = all_empty_cirles(array_of_squares)
-      true_array
-    end
-  end
-
-  def rook_moving_right(starting_row, ending_row, starting_column, ending_column)
-    array_of_squares = []
-    if starting_row == ending_row && starting_column < ending_column
-      range = (starting_column + 1...ending_column).to_a
-      range.each { |column| array_of_squares << [starting_row, column] }
-
-      true_array = all_empty_cirles(array_of_squares)
-      true_array
-    end
-  end
-
+  # Finish building these methods
   def knight_moves(move_array, color, capturing = false)
 
   end
