@@ -2,8 +2,10 @@
 
 # methods in this module all return boolean values - whether or not a given move is a valid one.
 module Moves
-  # Reader method for determining if pawn move is valid
+  # Main methods for each piece type
   def pawn_moves(color, piece, destination)
+    return false if piece == nil || destination == nil
+
     first = first_move?(color, piece)
     clear = clear_path?(piece, destination)
     capture = capturing?(color, piece, destination)
@@ -16,59 +18,17 @@ module Moves
     false
   end
 
-  def rook_moves(move_array, color, capturing = false)
-    starting_row = move_array[0][0]
-    ending_row = move_array[1][0]
-    starting_column = move_array[0][1]
-    ending_column = move_array[1][1]
+  def rook_moves(color, piece, destination)
+    return false if piece == nil || destination == nil
 
-    true_array = rook_moving_up(starting_row, ending_row, starting_column, ending_column) if starting_row > ending_row
-    true_array = rook_moving_down(starting_row, ending_row, starting_column, ending_column) if starting_row < ending_row
-    true_array = rook_moving_left(starting_row, ending_row, starting_column, ending_column) if starting_column > ending_column
-    true_array = rook_moving_right(starting_row, ending_row, starting_column, ending_column) if starting_column < ending_column
+    clear = clear_path?(piece, destination)
+    capture = capturing?(color, piece, destination)
 
-    return true if true_array.all? == true || true_array.nil?
+    return true if clear && valid_rook_moves(color, piece, destination)
+    return true if capture && valid_rook_moves(color, piece, destination)
 
     puts 'Invalid move! Please enter a valid move for a rook.'
     false
-  end
-
-  # Helper methods for pawn moves
-  def first_move?(color, piece)
-    return true if color == white && piece[0] == 6
-    return true if color == black && piece[0] == 1
-
-    false
-  end
-
-  def one_or_two_ahead?(color, starting_row, ending_row)
-    return true if color == white && (starting_row - ending_row == 1 || starting_row - ending_row == 2)
-    return true if color == black && (starting_row - ending_row == -1 || starting_row - ending_row == -2)
-
-    false
-  end
-
-  def one_ahead?(color, starting_row, ending_row)
-    return true if color == white && starting_row - ending_row == 1
-    return true if color == black && starting_row - ending_row == -1
-
-    false
-  end
-
-  def valid_diagonal?(color, piece, destination)
-    if color == white &&
-       piece[0] - destination[0] == 1 &&
-       (piece[1] - destination[1] == 1 ||
-        piece[1] - destination[1] == -1)
-      true
-    elsif color == black &&
-          piece[0] - destination[0] == -1 &&
-          (piece[1] - destination[1] == 1 ||
-          piece[1] - destination[1] == -1)
-      true
-    else
-      false
-    end
   end
 
   # Helper methods for all moves
@@ -129,6 +89,7 @@ module Moves
 
     if color == white
       row_range.each_index do |index|
+        p "black symbols? #{black_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }}"
         array[index] = if !grid[row_range[index]][column_range[index]].match(empty_circle) &&
                           black_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }
                          true
@@ -138,6 +99,7 @@ module Moves
       end
     else
       row_range.each_index do |index|
+        p "white symbols? #{white_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }}"
         array[index] = if !grid[row_range[index]][column_range[index]].match(empty_circle) &&
                           white_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }
                          true
@@ -147,27 +109,86 @@ module Moves
       end
     end
     array.shift
-    return true if array.all?(true)
+    return true if array[-1] == true
 
     false
   end
 
-  def rook_moves(move_array, color, capturing = false)
-    starting_row = move_array[0][0]
-    ending_row = move_array[1][0]
-    starting_column = move_array[0][1]
-    ending_column = move_array[1][1]
+
+  # Helper methods for pawn moves
+  def first_move?(color, piece)
+    return true if color == white && piece[0] == 6
+    return true if color == black && piece[0] == 1
+
+    false
+  end
+
+  def one_or_two_ahead?(color, starting_row, ending_row)
+    return true if color == white && (starting_row - ending_row == 1 || starting_row - ending_row == 2)
+    return true if color == black && (starting_row - ending_row == -1 || starting_row - ending_row == -2)
+
+    false
+  end
+
+  def one_ahead?(color, starting_row, ending_row)
+    return true if color == white && starting_row - ending_row == 1
+    return true if color == black && starting_row - ending_row == -1
+
+    false
+  end
+
+  def valid_diagonal?(color, piece, destination)
+    if color == white &&
+       piece[0] - destination[0] == 1 &&
+       (piece[1] - destination[1] == 1 ||
+        piece[1] - destination[1] == -1)
+      true
+    elsif color == black &&
+          piece[0] - destination[0] == -1 &&
+          (piece[1] - destination[1] == 1 ||
+          piece[1] - destination[1] == -1)
+      true
+    else
+      false
+    end
+  end
+
+  # Helper methods for rook moves
+  def valid_rook_moves(color, piece, destination)
+    return true if valid_vertical(color, piece, destination) || valid_horizontal(color, piece, destination)
+
+    false
+  end
+
+  def valid_vertical(color, piece, destination)
+    return true if piece[0] == destination[0]
+
+    false
+  end
+
+  def valid_horizontal(color, piece, destination)
+    return true if piece[1] == destination[1]
+
+    false
+  end
+
+
+  # def rook_moves(move_array, color, capturing = false)
+  #   starting_row = move_array[0][0]
+  #   ending_row = move_array[1][0]
+  #   starting_column = move_array[0][1]
+  #   ending_column = move_array[1][1]
     
-    true_array = rook_moving_up(starting_row, ending_row, starting_column, ending_column) if starting_row > ending_row
-    true_array = rook_moving_down(starting_row, ending_row, starting_column, ending_column) if starting_row < ending_row
-    true_array = rook_moving_left(starting_row, ending_row, starting_column, ending_column) if starting_column > ending_column
-    true_array = rook_moving_right(starting_row, ending_row, starting_column, ending_column) if starting_column < ending_column
+  #   true_array = rook_moving_up(starting_row, ending_row, starting_column, ending_column) if starting_row > ending_row
+  #   true_array = rook_moving_down(starting_row, ending_row, starting_column, ending_column) if starting_row < ending_row
+  #   true_array = rook_moving_left(starting_row, ending_row, starting_column, ending_column) if starting_column > ending_column
+  #   true_array = rook_moving_right(starting_row, ending_row, starting_column, ending_column) if starting_column < ending_column
 
-    return true if true_array.all? == true || true_array.nil?
+  #   return true if true_array.all? == true || true_array.nil?
 
-    puts 'Invalid move! Please enter a valid move for a rook.'
-    false
-  end
+  #   puts 'Invalid move! Please enter a valid move for a rook.'
+  #   false
+  # end
 
   def rook_moving_up(starting_row, ending_row, starting_column, ending_column)
     array_of_squares = []
