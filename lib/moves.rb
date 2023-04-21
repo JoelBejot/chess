@@ -90,7 +90,7 @@ module Moves
     if color == white
       row_range.each_index do |index|
         p "black symbols? #{black_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }}"
-        array[index] = if !grid[row_range[index]][column_range[index]].match(empty_circle) &&
+        array[index] = if grid[row_range[index]][column_range[index]].match(empty_circle) ||
                           black_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }
                          true
                        else
@@ -100,7 +100,7 @@ module Moves
     else
       row_range.each_index do |index|
         p "white symbols? #{white_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }}"
-        array[index] = if !grid[row_range[index]][column_range[index]].match(empty_circle) &&
+        array[index] = if grid[row_range[index]][column_range[index]].match(empty_circle) ||
                           white_symbols_array.any? { |el| el == grid[row_range[index]][column_range[index]][1..-2] }
                          true
                        else
@@ -108,8 +108,10 @@ module Moves
                        end
       end
     end
+    p "array before shift #{array}"
     array.shift
-    return true if array[-1] == true
+    p "array after shift #{array}"
+    return true if array.all?(true)
 
     false
   end
