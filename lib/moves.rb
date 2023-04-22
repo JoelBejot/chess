@@ -2,14 +2,14 @@
 
 # methods in this module all return boolean values - whether or not a given move is a valid one.
 module Moves
-  KING_MOVES = [
-    [0, 1], [0, -1], [1, 0], [-1, 0],
-    [1, 1], [1, -1], [-1, 1], [-1, -1]
-  ].freeze
-
   KNIGHT_MOVES = [
     [1, 2], [-1, -2], [-1, 2], [1, -2],
     [2, 1], [-2, -1], [-2, 1], [2, -1]
+  ].freeze
+
+  KING_MOVES = [
+    [0, 1], [0, -1], [1, 0], [-1, 0],
+    [1, 1], [1, -1], [-1, 1], [-1, -1]
   ].freeze
 
   # Main methods for each piece type
@@ -20,8 +20,8 @@ module Moves
     clear = clear_path?(piece, destination)
     capture = capturing?(color, piece, destination)
 
-    return true if first && clear && one_or_two_ahead?(color, piece[0], destination[0])
-    return true if !first && !capture && clear && one_ahead?(color, piece[0], destination[0])
+    return true if first && clear && one_or_two_ahead?(color, piece, destination)
+    return true if !first && !capture && clear && one_ahead?(color, piece, destination)
     return true if capture && valid_diagonal?(color, piece, destination)
 
     puts 'Invalid move! Please enter a valid move for a pawn.'
@@ -51,6 +51,37 @@ module Moves
     return true if capture && valid_knight_moves(piece, destination)
    
     puts 'Invalid move! Please enter a valid move for a knight.'
+
+    false
+  end
+
+  def bishop_moves(color, piece, destination)
+    return false if piece == nil || destination == nil
+
+    clear = clear_path?(piece, destination)
+    capture = capturing?(color, piece, destination)
+
+    return true if clear && valid_bishop_moves(piece, destination)
+    return true if capture && valid_bishop_moves(piece, destination)
+
+    puts 'Invalid move! Please enter a valid move for a bishop.'
+    
+    false
+  end
+
+  def queen_moves(color, piece, destination)
+    return false if piece == nil || destination == nil
+
+    clear = clear_path?(piece, destination)
+    capture = capturing?(color, piece, destination)
+
+    p "clear = #{clear}"
+    p "capture = #{capture}"
+
+    return true if clear && valid_queen_moves(piece, destination)
+    return true if capture && valid_queen_moves(piece, destination)
+
+    puts 'Invalid move! Please enter a valid move for a queen.'
 
     false
   end
@@ -99,6 +130,7 @@ module Moves
   end
 
   def all_clear?(row_range, column_range, piece, destination)
+    return false if row_range.nil? || column_range.nil?
     array = []
 
     row_range.reverse! if piece[0] > destination[0]
@@ -134,14 +166,12 @@ module Moves
     array = []
 
     if color == white
-      p "black symbols? #{black_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }}"
       array[0] = if black_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }
                    true
                  else
                    false
                  end
     else
-      p "white symbols? #{white_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }}"
       array[0] = if white_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }
                    true
                  else
@@ -154,6 +184,12 @@ module Moves
     false
   end
 
+  def all_empty_cirles(array_of_squares)
+    true_array = []
+    array_of_squares.each { |coord| true_array << grid[coord[0]][coord[1]].match(empty_circle) ? true : false }
+    true_array
+  end
+
   # Helper methods for pawn moves
   def first_move?(color, piece)
     return true if color == white && piece[0] == 6
@@ -162,16 +198,34 @@ module Moves
     false
   end
 
-  def one_or_two_ahead?(color, starting_row, ending_row)
-    return true if color == white && (starting_row - ending_row == 1 || starting_row - ending_row == 2)
-    return true if color == black && (starting_row - ending_row == -1 || starting_row - ending_row == -2)
+  def one_or_two_ahead?(color, piece, destination)
+    if color == white &&
+       (piece[0] - destination[0] == 1 || piece[0] - destination[0] == 2) &&
+       piece[1] == destination[1]
+      return true
+    end
+
+    if color == black &&
+      (piece[0] - destination[0] == -1 || piece[0] - destination[0] == -2) &&
+      piece[1] == destination[1]
+     return true
+    end
 
     false
   end
 
-  def one_ahead?(color, starting_row, ending_row)
-    return true if color == white && starting_row - ending_row == 1
-    return true if color == black && starting_row - ending_row == -1
+  def one_ahead?(color, piece, destination)
+    if color == white &&
+       piece[0] - destination[0] == 1 &&
+       piece[1] == destination[1]
+      return true
+    end
+
+    if color == black &&
+       piece[0] - destination[0] == -1 &&
+       piece[1] == destination[1]
+      return true
+    end
 
     false
   end
@@ -179,13 +233,11 @@ module Moves
   def valid_diagonal?(color, piece, destination)
     if color == white &&
        piece[0] - destination[0] == 1 &&
-       (piece[1] - destination[1] == 1 ||
-        piece[1] - destination[1] == -1)
+       (piece[1] - destination[1]).abs == 1
       true
     elsif color == black &&
           piece[0] - destination[0] == -1 &&
-          (piece[1] - destination[1] == 1 ||
-          piece[1] - destination[1] == -1)
+          (piece[1] - destination[1]).abs == 1 
       true
     else
       false
@@ -221,6 +273,23 @@ module Moves
     false
   end
 
+  # Helper method for bishop moves
+  def valid_bishop_moves(piece, destination)
+    row_diff = (piece[0] - destination[0]).abs
+    col_diff = (piece[1] - destination[1]).abs
+
+    return true if row_diff == col_diff
+
+    false
+  end
+
+  # Helper method for queen moves
+  def valid_queen_moves(piece, destination)
+    return true if valid_bishop_moves(piece, destination) || valid_rook_moves(piece, destination)
+
+    false
+  end
+
   # Helper methods for king moves
   def valid_king_moves(piece, destination)
     array = []
@@ -231,6 +300,7 @@ module Moves
     false
   end
 
+  # Finish building these methods
   def check
 
   end
@@ -240,19 +310,4 @@ module Moves
   end
 
 
-  # Finish building these methods
-  def bishop_moves(move_array, color, capturing = false)
-
-  end
-
-  def queen_moves(move_array, color, capturing = false)
-
-  end
-
-
-  def all_empty_cirles(array_of_squares)
-    true_array = []
-    array_of_squares.each { |coord| true_array << grid[coord[0]][coord[1]].match(empty_circle) ? true : false }
-    true_array
-  end
 end
