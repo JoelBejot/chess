@@ -40,6 +40,8 @@ class Board
               pawn_moves(color, piece, destination)
             elsif grid[piece[0]][piece[1]].match(rook(color))
               rook_moves(color, piece, destination)
+            elsif grid[piece[0]][piece[1]].match(knight(color))
+              knight_moves(color, piece, destination)
             elsif grid[piece[0]][piece[1]].match(king(color))
               king_moves(color, piece, destination)
             end

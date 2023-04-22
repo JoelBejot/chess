@@ -2,6 +2,16 @@
 
 # methods in this module all return boolean values - whether or not a given move is a valid one.
 module Moves
+  KING_MOVES = [
+    [0, 1], [0, -1], [1, 0], [-1, 0],
+    [1, 1], [1, -1], [-1, 1], [-1, -1]
+  ].freeze
+
+  KNIGHT_MOVES = [
+    [1, 2], [-1, -2], [-1, 2], [1, -2],
+    [2, 1], [-2, -1], [-2, 1], [2, -1]
+  ].freeze
+
   # Main methods for each piece type
   def pawn_moves(color, piece, destination)
     return false if piece == nil || destination == nil
@@ -24,12 +34,44 @@ module Moves
     clear = clear_path?(piece, destination)
     capture = capturing?(color, piece, destination)
 
-    return true if clear && valid_rook_moves(color, piece, destination)
-    return true if capture && valid_rook_moves(color, piece, destination)
+    return true if clear && valid_rook_moves(piece, destination)
+    return true if capture && valid_rook_moves(piece, destination)
 
     puts 'Invalid move! Please enter a valid move for a rook.'
     false
   end
+
+  def knight_moves(color, piece, destination)
+    return false if piece == nil || destination == nil
+
+    clear = true if grid[destination[0]][destination[1]].match(empty_circle)
+    capture = opponent_at_end?(color, destination)
+
+    return true if clear && valid_knight_moves(piece, destination)
+    return true if capture && valid_knight_moves(piece, destination)
+   
+    puts 'Invalid move! Please enter a valid move for a knight.'
+
+    false
+  end
+
+  def king_moves(color, piece, destination)
+    return false if piece == nil || destination == nil
+
+    clear = clear_path?(piece, destination)
+    capture = capturing?(color, piece, destination)
+
+    # check/checkmate methods - cannot move into a check or checkmate
+    # return false if check or checkmate
+
+    return true if clear && valid_king_moves(piece, destination)
+    return true if capture && valid_king_moves(piece, destination)
+   
+    puts 'Invalid move! Please enter a valid move for a king.'
+
+    false
+  end
+
 
   # Helper methods for all moves
   def clear_path?(piece, destination)
@@ -151,30 +193,54 @@ module Moves
   end
 
   # Helper methods for rook moves
-  def valid_rook_moves(color, piece, destination)
-    return true if valid_vertical(color, piece, destination) || valid_horizontal(color, piece, destination)
+  def valid_rook_moves(piece, destination)
+    return true if valid_vertical(piece, destination) || valid_horizontal(piece, destination)
 
     false
   end
 
-  def valid_vertical(color, piece, destination)
+  def valid_vertical(piece, destination)
     return true if piece[0] == destination[0]
 
     false
   end
 
-  def valid_horizontal(color, piece, destination)
+  def valid_horizontal(piece, destination)
     return true if piece[1] == destination[1]
 
     false
   end
 
+  # Helper method for knight moves
+  def valid_knight_moves(piece, destination)
+    array = []
+    array[0] = piece[0] - destination[0]
+    array[1] = piece[1] - destination[1]
+    return true if KNIGHT_MOVES.any?(array)
 
-  # Finish building these methods
-  def knight_moves(move_array, color, capturing = false)
+    false
+  end
+
+  # Helper methods for king moves
+  def valid_king_moves(piece, destination)
+    array = []
+    array[0] = piece[0] - destination[0]
+    array[1] = piece[1] - destination[1]
+    return true if KING_MOVES.any?(array)
+
+    false
+  end
+
+  def check
 
   end
 
+  def checkmate
+
+  end
+
+
+  # Finish building these methods
   def bishop_moves(move_array, color, capturing = false)
 
   end
@@ -183,17 +249,6 @@ module Moves
 
   end
 
-  def king_moves(move_array, color, capturing = false)
-    starting_row = move_array[0][0]
-    ending_row = move_array[1][0]
-    starting_column = move_array[0][1]
-    ending_column = move_array[1][1]
-
-    return true if (starting_row - ending_row == 1 || starting_row - ending_row == -1) && grid[ending_row][ending_column].match(empty_circle)
-    return true if (starting_column - ending_column == 1 || starting_column - ending_column == -1) && grid[ending_row][ending_column].match(empty_circle)
-    
-    false
-  end
 
   def all_empty_cirles(array_of_squares)
     true_array = []
