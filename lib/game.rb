@@ -28,11 +28,11 @@ class Game
   end
 
   def game
-    # intro
-    # chess_rules = Rules.new
-    # chess_rules.rules
-    # set_player_name
-    # who_goes_first
+    intro
+    chess_rules = Rules.new
+    chess_rules.rules
+    set_player_name
+    who_goes_first
     # turn = 0
     loop do
       @turn += 1

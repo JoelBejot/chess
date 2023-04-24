@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"path": "../../../../odin_web_101"
+		},
+		{
+			"path": "../../../../binary-search-tree"
+		}
+	]
+}
