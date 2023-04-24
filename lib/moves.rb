@@ -12,6 +12,9 @@ module Moves
     [1, 1], [1, -1], [-1, 1], [-1, -1]
   ].freeze
 
+  # Have to see if any enemy can reach the king at the beginning of each move.
+  # If so, then return false
+
   # Main methods for each piece type
   def pawn_moves(color, piece, destination)
     return false if piece == nil || destination == nil
@@ -130,7 +133,7 @@ module Moves
   end
 
   def all_clear?(row_range, column_range, piece, destination)
-    return false if row_range.nil? || column_range.nil?
+    return false if row_range.nil? || column_range.nil? || row_range.length != column_range.length
     array = []
 
     row_range.reverse! if piece[0] > destination[0]
@@ -300,14 +303,13 @@ module Moves
     false
   end
 
-  # Finish building these methods
-  def check
-
+  def update_king_position(color, destination)
+    if color == white
+      @white_king_position = destination[0], destination[1]
+    else
+      @black_king_position = destination[0], destination[1]
+    end
+    p @white_king_position
+    p @black_king_position
   end
-
-  def checkmate
-
-  end
-
-
 end
