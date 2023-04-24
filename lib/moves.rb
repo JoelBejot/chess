@@ -17,22 +17,19 @@ module Moves
 
   # Main methods for each piece type
   def pawn_moves(color, piece, destination)
-    return false if piece == nil || destination == nil
+    return false if piece.nil? || destination.nil?
 
-    first = first_move?(color, piece)
-    clear = clear_path?(piece, destination)
-    capture = capturing?(color, piece, destination)
-
-    return true if first && clear && one_or_two_ahead?(color, piece, destination)
-    return true if !first && !capture && clear && one_ahead?(color, piece, destination)
-    return true if capture && valid_diagonal?(color, piece, destination)
+    return true if first?(color, piece, destination)
+    return true if next_pawn_move(color, piece, destination)
+    return true if capturing?(color, piece, destination) &&
+                   valid_diagonal?(color, piece, destination)
 
     puts 'Invalid move! Please enter a valid move for a pawn.'
     false
   end
 
   def rook_moves(color, piece, destination)
-    return false if piece == nil || destination == nil
+    return false if piece.nil? || destination.nil?
 
     clear = clear_path?(piece, destination)
     capture = capturing?(color, piece, destination)
@@ -45,21 +42,20 @@ module Moves
   end
 
   def knight_moves(color, piece, destination)
-    return false if piece == nil || destination == nil
+    return false if piece.nil? || destination.nil?
 
     clear = true if grid[destination[0]][destination[1]].match(empty_circle)
     capture = opponent_at_end?(color, destination)
 
-    return true if clear && valid_knight_moves(piece, destination)
-    return true if capture && valid_knight_moves(piece, destination)
-   
+    return true if (clear || capture) && valid_knight_moves(piece, destination)
+
     puts 'Invalid move! Please enter a valid move for a knight.'
 
     false
   end
 
   def bishop_moves(color, piece, destination)
-    return false if piece == nil || destination == nil
+    return false if piece.nil? || destination.nil?
 
     clear = clear_path?(piece, destination)
     capture = capturing?(color, piece, destination)
@@ -68,18 +64,15 @@ module Moves
     return true if capture && valid_bishop_moves(piece, destination)
 
     puts 'Invalid move! Please enter a valid move for a bishop.'
-    
+
     false
   end
 
   def queen_moves(color, piece, destination)
-    return false if piece == nil || destination == nil
+    return false if piece.nil? || destination.nil?
 
     clear = clear_path?(piece, destination)
     capture = capturing?(color, piece, destination)
-
-    p "clear = #{clear}"
-    p "capture = #{capture}"
 
     return true if clear && valid_queen_moves(piece, destination)
     return true if capture && valid_queen_moves(piece, destination)
@@ -90,22 +83,18 @@ module Moves
   end
 
   def king_moves(color, piece, destination)
-    return false if piece == nil || destination == nil
+    return false if piece.nil? || destination.nil?
 
     clear = clear_path?(piece, destination)
     capture = capturing?(color, piece, destination)
 
-    # check/checkmate methods - cannot move into a check or checkmate
-    # return false if check or checkmate
-
     return true if clear && valid_king_moves(piece, destination)
     return true if capture && valid_king_moves(piece, destination)
-   
+
     puts 'Invalid move! Please enter a valid move for a king.'
 
     false
   end
-
 
   # Helper methods for all moves
   def clear_path?(piece, destination)
@@ -134,15 +123,11 @@ module Moves
 
   def all_clear?(row_range, column_range, piece, destination)
     return false if row_range.nil? || column_range.nil? || row_range.length != column_range.length
+
     array = []
-
-    row_range.reverse! if piece[0] > destination[0]
-    column_range.reverse! if piece[1] > destination[1]
-
-    row_range.each_index do |index|
-      array[index] = grid[row_range[index]][column_range[index]].match(empty_circle) ? true : false
-    end
-
+    row_range = reverse_rows(row_range, piece, destination)
+    column_range = reverse_columns(column_range, piece, destination)
+    array = build_spaces_array(row_range, column_range, array)
     array.shift
 
     return true if array.all?(true) || array.nil?
@@ -150,41 +135,61 @@ module Moves
     false
   end
 
+  def reverse_rows(row_range, piece, destination)
+    row_range.reverse! if piece[0] > destination[0]
+    row_range
+  end
+
+  def reverse_columns(column_range, piece, destination)
+    column_range.reverse! if piece[1] > destination[1]
+    column_range
+  end
+
+  def build_spaces_array(row_range, column_range, array)
+    row_range.each_index do |index|
+      array[index] = grid[row_range[index]][column_range[index]].match(empty_circle) ? true : false
+    end
+    array
+  end
+
   def capturing?(color, piece, destination)
     row_range = get_row_range(piece[0], destination[0])
     column_range = get_column_range(piece[1], destination[1])
-
-
     array_length_match(row_range, column_range)
-    if piece[0] > destination[0]
-      clear = all_clear?(row_range[1..-1], column_range[1..-1], piece, destination)
-    else
-      clear = all_clear?(row_range[0..-2], column_range[0..-2], piece, destination)
-    end
+    clear = clear_for_capture(row_range, column_range, piece, destination)
+
     return true if clear && opponent_at_end?(color, destination)
-  
+  end
+
+  def clear_for_capture(row_range, column_range, piece, destination)
+    if piece[0] > destination[0]
+      all_clear?(row_range[1..-1], column_range[1..-1], piece, destination)
+    else
+      all_clear?(row_range[0..-2], column_range[0..-2], piece, destination)
+    end
   end
 
   def opponent_at_end?(color, destination)
     array = []
 
-    if color == white
-      array[0] = if black_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }
-                   true
-                 else
-                   false
-                 end
-    else
-      array[0] = if white_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }
-                   true
-                 else
-                   false
-                 end
-    end
+    array[0] = if (color == white && any_black_symbols?(destination)) ||
+                  any_white_symbols?(destination)
+                 true
+               else
+                 false
+               end
 
     return true if array[0] == true
 
     false
+  end
+
+  def any_black_symbols?(destination)
+    black_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }
+  end
+
+  def any_white_symbols?(destination)
+    white_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }
   end
 
   def all_empty_cirles(array_of_squares)
@@ -194,6 +199,22 @@ module Moves
   end
 
   # Helper methods for pawn moves
+  def first?(color, piece, destination)
+    return true if first_move?(color, piece) &&
+                   clear_path?(piece, destination) &&
+                   one_or_two_ahead?(color, piece, destination)
+
+    false
+  end
+
+  def next_pawn_move(color, piece, destination)
+    return true if !first_move?(color, piece) &&
+                   !capturing?(color, piece, destination) &&
+                   one_ahead?(color, piece, destination)
+
+    false
+  end
+
   def first_move?(color, piece)
     return true if color == white && piece[0] == 6
     return true if color == black && piece[0] == 1
@@ -202,16 +223,27 @@ module Moves
   end
 
   def one_or_two_ahead?(color, piece, destination)
+    return true if one_or_two_ahead_white(color, piece, destination)
+    return true if one_or_two_ahead_black(color, piece, destination)
+
+    false
+  end
+
+  def one_or_two_ahead_white(color, piece, destination)
     if color == white &&
        (piece[0] - destination[0] == 1 || piece[0] - destination[0] == 2) &&
        piece[1] == destination[1]
       return true
     end
 
+    false
+  end
+
+  def one_or_two_ahead_black(color, piece, destination)
     if color == black &&
-      (piece[0] - destination[0] == -1 || piece[0] - destination[0] == -2) &&
-      piece[1] == destination[1]
-     return true
+       (piece[0] - destination[0] == -1 || piece[0] - destination[0] == -2) &&
+       piece[1] == destination[1]
+      return true
     end
 
     false
@@ -219,14 +251,12 @@ module Moves
 
   def one_ahead?(color, piece, destination)
     if color == white &&
-       piece[0] - destination[0] == 1 &&
-       piece[1] == destination[1]
+       piece[0] - destination[0] == 1 && piece[1] == destination[1]
       return true
     end
 
     if color == black &&
-       piece[0] - destination[0] == -1 &&
-       piece[1] == destination[1]
+       piece[0] - destination[0] == -1 && piece[1] == destination[1]
       return true
     end
 
@@ -235,16 +265,19 @@ module Moves
 
   def valid_diagonal?(color, piece, destination)
     if color == white &&
-       piece[0] - destination[0] == 1 &&
-       (piece[1] - destination[1]).abs == 1
-      true
-    elsif color == black &&
-          piece[0] - destination[0] == -1 &&
-          (piece[1] - destination[1]).abs == 1 
-      true
+       piece[0] - destination[0] == 1 && move_one_column(piece, destination)
+      return true
+    elsif piece[0] - destination[0] == -1 && move_one_column(piece, destination)
+      return true
     else
-      false
+      return false
     end
+  end
+
+  def move_one_column(piece, destination)
+    return true if (piece[1] - destination[1]).abs == 1
+
+    false
   end
 
   # Helper methods for rook moves

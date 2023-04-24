@@ -38,8 +38,8 @@ class Game
       @turn += 1
       board.display_board
       move(@turn)
-      board.update_board(@piece, @destination, @turn)
-      in_check = board.check?(@destination, @turn)
+      board.update_board(@piece, @destination)
+      # in_check = board.check?(@destination, @turn)
       break if @turn >= 20
     end
   end
