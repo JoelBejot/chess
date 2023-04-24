@@ -13,11 +13,12 @@ class Game
   include Moves
 
   attr_accessor :player1, :player2, :board, :turn, :piece, :destination, :user_piece, :user_destination
-  attr_reader :color_array
+  attr_reader :color_array, :chess_rules
 
   def initialize
     @player1 = Player.new
     @player2 = Player.new
+    @chess_rules = Rules.new
     @color_array = [white, black]
     @board = Board.new
     @turn = 0
@@ -28,17 +29,16 @@ class Game
   end
 
   def game
-    # intro
-    # chess_rules = Rules.new
-    # chess_rules.rules
-    # set_player_name
-    # who_goes_first
-    # turn = 0
+    intro
+    chess_rules.rules
+    set_player_name
+    who_goes_first
     loop do
       @turn += 1
       board.display_board
       move(@turn)
       board.update_board(@piece, @destination)
+      board.check?
       break if @turn >= 20
     end
   end

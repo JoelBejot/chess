@@ -53,6 +53,11 @@ class Board
     valid
   end
 
+  def check?
+    puts "In the check method"
+    
+  end
+
   def add_pieces_to_board
     assign_white_pieces
     assign_black_pieces
