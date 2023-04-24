@@ -13,6 +13,8 @@ class Board
   def initialize
     @grid = Array.new(8) { Array.new(8) { "|#{empty_circle}|" } }
     add_pieces_to_board
+    @white_king_position = [7, 4]
+    @black_king_position = [0, 4]
   end
 
   def display_board
@@ -29,7 +31,7 @@ class Board
     end
   end
 
-  def update_board(piece, destination)
+  def update_board(piece, destination, turn)
     grid[destination[0]][destination[1]] = grid[piece[0]][piece[1]]
     grid[piece[0]][piece[1]] = "|#{empty_circle}|"
   end
@@ -47,10 +49,25 @@ class Board
             elsif grid[piece[0]][piece[1]].match(queen(color))
               queen_moves(color, piece, destination)
             elsif grid[piece[0]][piece[1]].match(king(color))
+              update_king_position(color, destination)
               king_moves(color, piece, destination)
             end
 
     valid
+  end
+
+  # Update to see if any piece from symbols_array can reach king with valid_move?
+
+  def check?(piece, turn)
+    return false if piece.nil?
+
+    check = turn.odd? ? valid_move?(piece, @black_king_position, turn) : valid_move?(piece, @white_king_position, turn)
+    puts "You're in check!" if check
+    check
+  end
+
+  def checkmate
+
   end
 
   def add_pieces_to_board

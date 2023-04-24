@@ -28,17 +28,18 @@ class Game
   end
 
   def game
-    intro
-    chess_rules = Rules.new
-    chess_rules.rules
-    set_player_name
-    who_goes_first
+    # intro
+    # chess_rules = Rules.new
+    # chess_rules.rules
+    # set_player_name
+    # who_goes_first
     # turn = 0
     loop do
       @turn += 1
       board.display_board
       move(@turn)
-      board.update_board(@piece, @destination)
+      board.update_board(@piece, @destination, @turn)
+      in_check = board.check?(@destination, @turn)
       break if @turn >= 20
     end
   end
