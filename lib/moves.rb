@@ -12,9 +12,6 @@ module Moves
     [1, 1], [1, -1], [-1, 1], [-1, -1]
   ].freeze
 
-  # Have to see if any enemy can reach the king at the beginning of each move.
-  # If so, then return false
-
   # Main methods for each piece type
   def pawn_moves(color, piece, destination)
     return false if piece.nil? || destination.nil?
@@ -266,11 +263,11 @@ module Moves
   def valid_diagonal?(color, piece, destination)
     if color == white &&
        piece[0] - destination[0] == 1 && move_one_column(piece, destination)
-      return true
+      true
     elsif piece[0] - destination[0] == -1 && move_one_column(piece, destination)
-      return true
+      true
     else
-      return false
+      false
     end
   end
 

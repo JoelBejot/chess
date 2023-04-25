@@ -12,7 +12,7 @@ class Game
   include Symbols
   include Moves
 
-  attr_accessor :player1, :player2, :board, :turn, :piece, :destination, :user_piece, :user_destination
+  attr_accessor :player1, :player2, :board, :turn, :game_piece, :game_destination, :user_piece, :user_destination
   attr_reader :color_array
 
   def initialize
@@ -21,8 +21,8 @@ class Game
     @color_array = [white, black]
     @board = Board.new
     @turn = 0
-    @piece = [0, 0]
-    @destination = [0, 0]
+    @game_piece = []
+    @game_destination = []
     @user_piece = String.new
     @user_destination = String.new
   end
@@ -38,7 +38,8 @@ class Game
       @turn += 1
       board.display_board
       move(@turn)
-      board.update_board(@piece, @destination)
+      board.update_board(@game_piece, @game_destination)
+      board.update_array_position(@game_piece, @game_destination, @turn)
       # in_check = board.check?(@destination, @turn)
       break if @turn >= 20
     end
@@ -58,11 +59,20 @@ class Game
     move_array = [nil, nil]
 
     loop do
-      valid_input = get_move(turn, @user_piece, @user_destination)
+      p "move loop - white pieces array #{board.white_pieces_array}"
+      p "move loop - black pieces array #{board.black_pieces_array}"
+      valid_input = get_move(turn)
+      p "after valid input - white pieces array #{board.white_pieces_array}"
+      p "after valid input - black pieces array #{board.black_pieces_array}"
 
-      @piece = translate_piece_to_grid(@user_piece)
-      @destination = translate_destination_to_grid(@user_destination)
-      break if valid_input && board.valid_move?(@piece, @destination, turn)
+      @game_piece = translate_piece_to_grid(@user_piece)
+      @game_destination = translate_destination_to_grid(@user_destination)
+      p "piece #{@game_piece}"
+      p "destination #{@game_destination}"
+      p "after translate - white pieces array #{board.white_pieces_array}"
+      p "after translate - black pieces array #{board.black_pieces_array}"
+
+      break if valid_input && board.valid_move?(@game_piece, @game_destination, turn)
 
       puts 'Please enter a valid move'
       puts ''
@@ -71,7 +81,7 @@ class Game
     move_array
   end
 
-  def get_move(turn, user_piece, user_destination)
+  def get_move(turn)
     loop do
       if turn.odd?
         (puts "#{player1.name}, which piece would you like to move? (Please enter column then row, ex. 'd2')")
@@ -91,23 +101,22 @@ class Game
   def translate_piece_to_grid(string)
     return nil if string.nil?
 
-    @piece[0] = (8 - string[1].to_i)
-    @piece[1] = (string[0].ord - 97)
-
-    @piece
+    p @game_piece[0] = (8 - string[1].to_i)
+    p @game_piece[1] = (string[0].ord - 97)
+    p @game_piece
   end
 
   def translate_destination_to_grid(string)
     return nil if string.nil?
 
-    @destination[0] = (8 - string[1].to_i)
-    @destination[1] = (string[0].ord - 97)
-
-    @destination
+    p @game_destination[0] = (8 - string[1].to_i)
+    p @game_destination[1] = (string[0].ord - 97)
+    p @game_destination
   end
 
   def valid_input?(piece, destination)
-    return false if piece.empty? || destination.empty?
+    return false if piece.empty? || destination.empty? ||
+                    piece.length != 2 || destination.length != 2
 
     return true if piece[0].match(/[abcdefgh]/) &&
                    piece[1].to_i.between?(1, 8) &&

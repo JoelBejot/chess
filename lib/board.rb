@@ -8,13 +8,11 @@ class Board
   include Enumerable
   include Moves
 
-  attr_accessor :grid
+  attr_accessor :grid, :white_pieces_array, :black_pieces_array
 
   def initialize
     @grid = Array.new(8) { Array.new(8) { "|#{empty_circle}|" } }
     add_pieces_to_board
-    # @white_king_position = [7, 4]
-    # @black_king_position = [0, 4]
     @white_pieces_array = [
       [6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7],
       [7, 0], [7, 1], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7]
@@ -44,66 +42,65 @@ class Board
     grid[piece[0]][piece[1]] = "|#{empty_circle}|"
   end
 
-  def update_array_position(color, piece, destination)
-    if color == white && @white_pieces_array.any? { |el| el == piece }
-      puts "white truthy"
-      index = @white_pieces_array.index(piece)
-      @white_pieces_array[index] = destination
-    elsif @black_pieces_array.any? { |el| el = destination if el == piece }
-      puts "black truthy"
-      index = @black_pieces_array.index(piece)
-      @black_pieces_array[index] = destination
+  def valid_move?(piece, destination, turn)
+    p 'Im in the valid move method'
+    return false if piece.nil? || destination.nil?
+
+    p "piece, destination, turn = #{piece}, #{destination}, #{turn}"
+    color = turn.odd? ? white : black
+    if grid[piece[0]][piece[1]].match(pawn(color))
+      pawn_moves(color, piece, destination)
+    elsif grid[piece[0]][piece[1]].match(rook(color))
+      rook_moves(color, piece, destination)
+    elsif grid[piece[0]][piece[1]].match(knight(color))
+      knight_moves(color, piece, destination)
+    elsif grid[piece[0]][piece[1]].match(bishop(color))
+      bishop_moves(color, piece, destination)
+    elsif grid[piece[0]][piece[1]].match(queen(color))
+      queen_moves(color, piece, destination)
+    elsif grid[piece[0]][piece[1]].match(king(color))
+      king_moves(color, piece, destination)
     end
-    p @white_pieces_array
-    p @black_pieces_array
   end
 
-  def valid_move?(piece, destination, turn)
-    return false if piece.nil? || destination.nil?
-    
-    color = turn.odd? ? white : black
-    valid = if grid[piece[0]][piece[1]].match(pawn(color))
-              update_array_position(color, piece, destination)
-              pawn_moves(color, piece, destination)
-            elsif grid[piece[0]][piece[1]].match(rook(color))
-              update_array_position(color, piece, destination)
-              rook_moves(color, piece, destination)
-            elsif grid[piece[0]][piece[1]].match(knight(color))
-              update_array_position(color, piece, destination)
-              knight_moves(color, piece, destination)
-            elsif grid[piece[0]][piece[1]].match(bishop(color))
-              update_array_position(color, piece, destination)
-              bishop_moves(color, piece, destination)
-            elsif grid[piece[0]][piece[1]].match(queen(color))
-              update_array_position(color, piece, destination)
-              queen_moves(color, piece, destination)
-            elsif grid[piece[0]][piece[1]].match(king(color))
-              update_array_position(color, piece, destination)
-              king_moves(color, piece, destination)
-            end
+  def update_array_position(piece, destination, turn)
+    puts "I'm in the update array position method"
+    p "white array #{white_pieces_array}"
+    p "black array #{black_pieces_array}"
+    p "piece, destination = #{piece}, #{destination}"
 
-    valid
+    if turn.odd?
+      p 'white truthy'
+      @white_pieces_array[@white_pieces_array.index(piece)] = destination
+    else
+      p 'black truthy'
+      @black_pieces_array[@black_pieces_array.index(piece)] = destination
+    end
+
+    p "white array #{white_pieces_array}"
+    p "black array #{black_pieces_array}"
+    
   end
 
   # Update to see if any piece from symbols_array can reach king with valid_move?
 
-  def check?(piece, turn)
-    return false if piece.nil?
+  # def check?(piece, turn)
+  #   return false if piece.nil?
 
-    # array = []
+  #   # array = []
 
-    # grid.each do |row|
-    #   row.each do |spot|
-    #     if white_symbols_array.any? { |el| array << [row, spot] }
-    #       # p "array = #{array}"
-    #     end
-    #   end
-    # end
+  #   # grid.each do |row|
+  #   #   row.each do |spot|
+  #   #     if white_symbols_array.any? { |el| array << [row, spot] }
+  #   #       # p "array = #{array}"
+  #   #     end
+  #   #   end
+  #   # end
 
-    check = turn.odd? ? valid_move?(piece, @black_king_position, turn) : valid_move?(piece, @white_king_position, turn)
-    puts "You're in check!" if check
-    check
-  end
+  #   check = turn.odd? ? valid_move?(piece, @black_king_position, turn) : valid_move?(piece, @white_king_position, turn)
+  #   puts "You're in check!" if check
+  #   check
+  # end
 
   def checkmate
 
@@ -195,6 +192,3 @@ class Board
     grid[0][4] = "|#{king(color)}|"
   end
 end
-
-
-
