@@ -2,13 +2,15 @@
 
 require_relative 'symbols'
 
+Dir["/home/joelbejot/chess/pieces/*.rb"].each {|file| require file }
+
 # class for the chess board
 class Board
   include Symbols
   include Enumerable
   include Moves
 
-  attr_accessor :grid, :white_pieces_array, :black_pieces_array
+  attr_accessor :grid, :white_pieces_array, :black_pieces_array, :captured_white_pieces, :captured_black_pieces
 
   def initialize
     @grid = Array.new(8) { Array.new(8) { "|#{empty_circle}|" } }
@@ -21,6 +23,8 @@ class Board
       [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7],
       [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7]
     ]
+    @captured_white_pieces = []
+    @captured_black_pieces = []
   end
 
   def display_board
@@ -48,6 +52,15 @@ class Board
 
     p "piece, destination, turn = #{piece}, #{destination}, #{turn}"
     color = turn.odd? ? white : black
+
+    if color == white && capturing?(color, piece, destination)
+      @captured_black_pieces << grid[destination[0]][destination[1]][1..-2]
+      p @captured_black_pieces.join(', ')
+    elsif color == black && capturing?(color, piece, destination)
+      @captured_white_pieces << grid[destination[0]][destination[1]][1..-2]
+      p @captured_white_pieces.join(', ')
+    end
+
     if grid[piece[0]][piece[1]].match(pawn(color))
       pawn_moves(color, piece, destination)
     elsif grid[piece[0]][piece[1]].match(rook(color))
@@ -64,43 +77,54 @@ class Board
   end
 
   def update_array_position(piece, destination, turn)
-    puts "I'm in the update array position method"
-    p "white array #{white_pieces_array}"
-    p "black array #{black_pieces_array}"
-    p "piece, destination = #{piece}, #{destination}"
-
     if turn.odd?
-      p 'white truthy'
       @white_pieces_array[@white_pieces_array.index(piece)] = destination
+      p @white_pieces_array[@white_pieces_array.index(destination)]
+      if @black_pieces_array.any?(@white_pieces_array[@white_pieces_array.index(destination)])
+        p "true"
+        p index = @black_pieces_array.index(destination)
+        @black_pieces_array[index] = nil
+      end
     else
-      p 'black truthy'
       @black_pieces_array[@black_pieces_array.index(piece)] = destination
+      p @black_pieces_array[@black_pieces_array.index(destination)]
+      if @white_pieces_array.any?(@black_pieces_array[@black_pieces_array.index(destination)])
+        p "true"
+        p index = @white_pieces_array.index(destination)
+        @white_pieces_array[index] = nil
+      end
     end
 
-    p "white array #{white_pieces_array}"
-    p "black array #{black_pieces_array}"
-    
+    p "white pieces array #{white_pieces_array}"
+    p "black pieces array #{black_pieces_array}"
+
+    display_captured_pieces
+  end
+
+  def display_captured_pieces
+    puts "Captured black pieces: #{captured_black_pieces.join(', ')}" unless captured_black_pieces.empty?
+    puts "Captured white pieces: #{captured_white_pieces.join(', ')}" unless captured_white_pieces.empty?
   end
 
   # Update to see if any piece from symbols_array can reach king with valid_move?
 
-  # def check?(piece, turn)
-  #   return false if piece.nil?
+  def check?(piece, turn)
+    return false if piece.nil?
 
-  #   # array = []
+    # array = []
 
-  #   # grid.each do |row|
-  #   #   row.each do |spot|
-  #   #     if white_symbols_array.any? { |el| array << [row, spot] }
-  #   #       # p "array = #{array}"
-  #   #     end
-  #   #   end
-  #   # end
+    # grid.each do |row|
+    #   row.each do |spot|
+    #     if white_symbols_array.any? { |el| array << [row, spot] }
+    #       # p "array = #{array}"
+    #     end
+    #   end
+    # end
 
-  #   check = turn.odd? ? valid_move?(piece, @black_king_position, turn) : valid_move?(piece, @white_king_position, turn)
-  #   puts "You're in check!" if check
-  #   check
-  # end
+    check = turn.odd? ? valid_move?(piece, @black_king_position, turn) : valid_move?(piece, @white_king_position, turn)
+    puts "You're in check!" if check
+    check
+  end
 
   def checkmate
 

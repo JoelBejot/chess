@@ -3,9 +3,13 @@
 require_relative 'player'
 require_relative 'rules'
 require_relative 'symbols'
-require_relative 'moves'
+# require_relative 'moves'
 require_relative 'board'
 require 'io/console'
+
+Dir["/home/joelbejot/chess/pieces/*.rb"].each {|file| require file }
+
+# Dir["/path/to/directory/*.rb"].each {|file| require file }
 
 # class for controlling game flow
 class Game
@@ -59,18 +63,10 @@ class Game
     move_array = [nil, nil]
 
     loop do
-      p "move loop - white pieces array #{board.white_pieces_array}"
-      p "move loop - black pieces array #{board.black_pieces_array}"
       valid_input = get_move(turn)
-      p "after valid input - white pieces array #{board.white_pieces_array}"
-      p "after valid input - black pieces array #{board.black_pieces_array}"
 
-      @game_piece = translate_piece_to_grid(@user_piece)
-      @game_destination = translate_destination_to_grid(@user_destination)
-      p "piece #{@game_piece}"
-      p "destination #{@game_destination}"
-      p "after translate - white pieces array #{board.white_pieces_array}"
-      p "after translate - black pieces array #{board.black_pieces_array}"
+      @game_piece = translate_user_input_to_grid(@user_piece)
+      @game_destination = translate_user_input_to_grid(@user_destination)
 
       break if valid_input && board.valid_move?(@game_piece, @game_destination, turn)
 
@@ -98,20 +94,14 @@ class Game
     end
   end
 
-  def translate_piece_to_grid(string)
+  def translate_user_input_to_grid(string)
     return nil if string.nil?
 
-    p @game_piece[0] = (8 - string[1].to_i)
-    p @game_piece[1] = (string[0].ord - 97)
-    p @game_piece
-  end
+    array = [nil, nil]
 
-  def translate_destination_to_grid(string)
-    return nil if string.nil?
-
-    p @game_destination[0] = (8 - string[1].to_i)
-    p @game_destination[1] = (string[0].ord - 97)
-    p @game_destination
+    array[0] = (8 - string[1].to_i)
+    array[1] = (string[0].ord - 97)
+    array
   end
 
   def valid_input?(piece, destination)
