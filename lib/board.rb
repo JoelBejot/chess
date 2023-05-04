@@ -1,13 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'symbols'
-require_relative 'pieces/moves'
-require_relative 'pieces/pawn'
-require_relative 'pieces/rook'
-require_relative 'pieces/knight'
-require_relative 'pieces/bishop'
-require_relative 'pieces/queen'
-require_relative 'pieces/king'
+require_relative 'moves'
 
 # class for the chess board
 class Board
@@ -15,7 +9,7 @@ class Board
   include Enumerable
   include Moves
 
-  attr_accessor :grid, :white_pieces_array, :black_pieces_array, :white_symbols_array, :black_symbols_array, :captured_white_pieces, :captured_black_pieces
+  attr_accessor :grid, :white_pieces_array, :black_pieces_array, :captured_white_pieces, :captured_black_pieces
 
   def initialize
     @grid = Array.new(8) { Array.new(8) { "|#{empty_circle}|" } }
@@ -28,10 +22,6 @@ class Board
       [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7],
       [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5], [1, 6], [1, 7]
     ]
-    white_pawn_init = Pawn.new(white)
-    black_pawn_init = Pawn.new(black)
-    @white_symbols_array = [white_pawn_init.pawn_color(white), rook(white), knight(white), bishop(white), queen(white), king(white)]
-    @black_symbols_array = [black_pawn_init.pawn_color(black), rook(black), knight(black), bishop(black), queen(black), king(black)]
     @captured_white_pieces = []
     @captured_black_pieces = []
   end
@@ -70,18 +60,18 @@ class Board
       p @captured_white_pieces.join(', ')
     end
 
-    if grid[piece[0]][piece[1]].match(Pawn.pawn_color(color))
-      Pawn.pawn_moves(color, piece, destination)
+    if grid[piece[0]][piece[1]].match(pawn(color))
+      pawn_moves(color, piece, destination)
     elsif grid[piece[0]][piece[1]].match(rook(color))
-      Rook.rook_moves(color, piece, destination)
+      rook_moves(color, piece, destination)
     elsif grid[piece[0]][piece[1]].match(knight(color))
-      Knight.knight_moves(color, piece, destination)
+      knight_moves(color, piece, destination)
     elsif grid[piece[0]][piece[1]].match(bishop(color))
-      Bishop.bishop_moves(color, piece, destination)
+      bishop_moves(color, piece, destination)
     elsif grid[piece[0]][piece[1]].match(queen(color))
-      Queen.queen_moves(color, piece, destination)
+      queen_moves(color, piece, destination)
     elsif grid[piece[0]][piece[1]].match(king(color))
-      King.king_moves(color, piece, destination)
+      king_moves(color, piece, destination)
     end
   end
 
@@ -155,11 +145,10 @@ class Board
   end
 
   def assign_pawns(color)
-    pawn_piece = Pawn.new(color)
     if color == white
-      grid[6].each_index { |index| grid[6][index] = "|#{pawn_piece.pawn_color(color)}|" }
+      grid[6].each_index { |index| grid[6][index] = "|#{pawn(color)}|" }
     else
-      grid[1].each_index { |index| grid[1][index] = "|#{pawn_piece.pawn_color(color)}|" }
+      grid[1].each_index { |index| grid[1][index] = "|#{pawn(color)}|" }
     end
   end
 
