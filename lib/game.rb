@@ -39,14 +39,18 @@ class Game
     # who_goes_first
     # turn = 0
     loop do
+      # board.checkmate?
+      # break if board.checkmate
       @turn += 1
       board.display_board
       move(@turn)
       board.update_board(@game_piece, @game_destination)
       board.update_array_position(@game_piece, @game_destination, @turn)
-      # in_check = board.check?(@destination, @turn)
+      in_check = board.check?(@game_destination, @turn)
+      p "in check? #{in_check}"
       break if @turn >= 20
     end
+    # turn.odd? ? (puts "#{player1.name} is the winner!") : (puts "#{player2.name} is the winner!")
   end
 
   def set_player_name

@@ -108,6 +108,7 @@ class Board
   # Update to see if any piece from symbols_array can reach king with valid_move?
 
   def check?(piece, turn)
+    p "in check method"
     return false if piece.nil?
 
     # array = []
@@ -120,9 +121,37 @@ class Board
     #   end
     # end
 
-    check = turn.odd? ? valid_move?(piece, @black_king_position, turn) : valid_move?(piece, @white_king_position, turn)
-    puts "You're in check!" if check
-    check
+    # check = turn.odd? ? valid_move?(piece, @black_king_position, turn) : valid_move?(piece, @white_king_position, turn)
+    # puts "You're in check!" if check
+    # check
+
+    white_king_position = white_pieces_array[12]
+    black_king_position = black_pieces_array[4]
+    p "white: #{white_king_position}, black:#{black_king_position}"
+    check_array = []
+    if turn.odd?
+      @white_pieces_array.each { |el| check_array << valid_check?(el, black_king_position, turn) }
+    end
+    check_array.any?(true) ? true : false
+
+  end
+
+  def valid_check?(piece, destination, turn)
+    color = turn.odd? ? white : black
+
+    if grid[piece[0]][piece[1]].match(pawn(color))
+      pawn_moves(color, piece, destination)
+    elsif grid[piece[0]][piece[1]].match(rook(color))
+      rook_moves(color, piece, destination)
+    elsif grid[piece[0]][piece[1]].match(knight(color))
+      knight_moves(color, piece, destination)
+    elsif grid[piece[0]][piece[1]].match(bishop(color))
+      bishop_moves(color, piece, destination)
+    elsif grid[piece[0]][piece[1]].match(queen(color))
+      queen_moves(color, piece, destination)
+    elsif grid[piece[0]][piece[1]].match(king(color))
+      king_moves(color, piece, destination)
+    end
   end
 
   def checkmate
