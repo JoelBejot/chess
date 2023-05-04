@@ -1,8 +1,13 @@
 # frozen_string_literal: true
 
 require_relative 'symbols'
-
-Dir["/home/joelbejot/chess/pieces/*.rb"].each {|file| require file }
+require_relative 'pieces/moves'
+require_relative 'pieces/pawn'
+require_relative 'pieces/rook'
+require_relative 'pieces/knight'
+require_relative 'pieces/bishop'
+require_relative 'pieces/queen'
+require_relative 'pieces/king'
 
 # class for the chess board
 class Board
@@ -62,17 +67,17 @@ class Board
     end
 
     if grid[piece[0]][piece[1]].match(pawn(color))
-      pawn_moves(color, piece, destination)
+      Pawn.pawn_moves(color, piece, destination)
     elsif grid[piece[0]][piece[1]].match(rook(color))
-      rook_moves(color, piece, destination)
+      Rook.rook_moves(color, piece, destination)
     elsif grid[piece[0]][piece[1]].match(knight(color))
-      knight_moves(color, piece, destination)
+      Knight.knight_moves(color, piece, destination)
     elsif grid[piece[0]][piece[1]].match(bishop(color))
-      bishop_moves(color, piece, destination)
+      Bishop.bishop_moves(color, piece, destination)
     elsif grid[piece[0]][piece[1]].match(queen(color))
-      queen_moves(color, piece, destination)
+      Queen.queen_moves(color, piece, destination)
     elsif grid[piece[0]][piece[1]].match(king(color))
-      king_moves(color, piece, destination)
+      King.king_moves(color, piece, destination)
     end
   end
 
@@ -146,10 +151,11 @@ class Board
   end
 
   def assign_pawns(color)
+    pawn = Pawn.new
     if color == white
-      grid[6].each_index { |index| grid[6][index] = "|#{pawn(color)}|" }
+      grid[6].each_index { |index| grid[6][index] = "|#{pawn.pawn_color(color)}|" }
     else
-      grid[1].each_index { |index| grid[1][index] = "|#{pawn(color)}|" }
+      grid[1].each_index { |index| grid[1][index] = "|#{pawn.pawn_color(color)}|" }
     end
   end
 

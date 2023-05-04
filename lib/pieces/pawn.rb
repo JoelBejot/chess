@@ -4,6 +4,10 @@
 class Pawn
   include Moves
 
+  def pawn_color(color)
+    color == white ? (return "\u{2659}") : (return "\u{265F}")
+  end
+
   def pawn_moves(color, piece, destination)
     p 'pawn moves'
     return false if piece.nil? || destination.nil?
