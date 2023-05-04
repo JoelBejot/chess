@@ -11,7 +11,7 @@ module Moves
   def black
     "\u{25A0}"
   end
-  
+
   def clear_path?(piece, destination)
     row_range = get_row_range(piece[0], destination[0])
     column_range = get_column_range(piece[1], destination[1])

@@ -4,6 +4,12 @@
 class Pawn
   include Moves
 
+  attr_accessor :pawn
+
+  def initialize(color)
+    @pawn = pawn_color(color)
+  end
+
   def pawn_color(color)
     color == white ? (return "\u{2659}") : (return "\u{265F}")
   end
