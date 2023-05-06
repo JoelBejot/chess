@@ -16,7 +16,7 @@ class Game
   include Symbols
   include Moves
 
-  attr_accessor :player1, :player2, :board, :turn, :game_piece, :game_destination, :user_piece, :user_destination
+  attr_accessor :player1, :player2, :board, :turn, :game_piece, :game_destination, :user_piece, :user_destination, :white_check, :black_check
   attr_reader :color_array
 
   def initialize
@@ -29,6 +29,8 @@ class Game
     @game_destination = []
     @user_piece = String.new
     @user_destination = String.new
+    @white_check = false
+    @black_check = false
   end
 
   def game
@@ -39,18 +41,21 @@ class Game
     # who_goes_first
     # turn = 0
     loop do
-      # board.checkmate?
-      # break if board.checkmate
+      break if board.checkmate
       @turn += 1
       board.display_board
       move(@turn)
       board.update_board(@game_piece, @game_destination)
       board.update_array_position(@game_piece, @game_destination, @turn)
-      in_check = board.check?(@game_destination, @turn)
-      p "in check? #{in_check}"
-      break if @turn >= 20
+      if turn.odd?
+        white_check = board.check?(@turn)
+      elsif turn.even?
+        black_check = board.check?(@turn)
+      end
+      p "in check? white: #{white_check}, black: #{black_check}"
+      break if board.white_pieces_array[12] == nil || board.black_pieces_array[4] == nil || board.checkmate
     end
-    # turn.odd? ? (puts "#{player1.name} is the winner!") : (puts "#{player2.name} is the winner!")
+    turn.odd? ? (puts "#{player1.name} is the winner!") : (puts "#{player2.name} is the winner!")
   end
 
   def set_player_name
@@ -63,6 +68,11 @@ class Game
     gets.chomp
   end
 
+  # so you get the move from the user, translate that to useful grid elements
+  # then, if you are already in check, you need to get out of check
+  # so you temporarily create like a proposed move
+  # if the proposed move gets you out of check, then you're good to go. If not, loop repeats
+
   def move(turn)
     move_array = [nil, nil]
 
@@ -71,7 +81,37 @@ class Game
 
       @game_piece = translate_user_input_to_grid(@user_piece)
       @game_destination = translate_user_input_to_grid(@user_destination)
+      temp_array = []
+      
+      if turn.odd?
+        # check = board.check?(turn + 1)
 
+      elsif turn.even?
+        # check = board.check?(turn + 1)
+      end
+
+      if white_check
+        # you gotta get out of check
+        # temp_array = board.white_pieces_array
+        temp_array = update_temp_array(board.white_pieces_array, @game_piece, @game_destination, turn)
+        p "temp array: #{temp_array}"
+        # board.out_of_check?(temp_array, turn)
+      elsif black_check
+        # you gotta get out of check
+        # temp_array = board.black_pieces_array
+        # board.out_of_check?(temp_array, turn)
+        temp_array = update_temp_array(board.black_pieces_array, @game_piece, @game_destination, turn)
+        p "temp array: #{temp_array}"
+      end
+
+
+      # need to use elements of temp_array in the conditional
+
+      # if board.valid_move?(@game_piece, @game_destination, turn)
+      #   board.update_array_position(el_from_temp_array, el_from_temp_array, @turn)
+      # end
+
+      # puts 'You\'re in check! Please move a piece to get out of check.' if check == true]
       break if valid_input && board.valid_move?(@game_piece, @game_destination, turn)
 
       puts 'Please enter a valid move'
