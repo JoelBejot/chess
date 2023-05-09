@@ -76,6 +76,11 @@ class Board
   end
 
   def update_array_position(piece, destination, turn)
+    p "in update_array - piece: #{piece}, destination: #{destination}"
+    p "white pieces array: #{@white_pieces_array}"
+    p "black pieces array: #{@black_pieces_array}"
+    return if @white_pieces_array.index(piece).nil? || @black_pieces_array.index(piece).nil?
+
     if turn.odd?
       @white_pieces_array[@white_pieces_array.index(piece)] = destination
       p @white_pieces_array[@white_pieces_array.index(destination)]
@@ -84,7 +89,7 @@ class Board
         p index = @black_pieces_array.index(destination)
         @black_pieces_array[index] = nil
       end
-    else
+    elsif turn.even?
       @black_pieces_array[@black_pieces_array.index(piece)] = destination
       p @black_pieces_array[@black_pieces_array.index(destination)]
       if @white_pieces_array.any?(@black_pieces_array[@black_pieces_array.index(destination)])
@@ -100,9 +105,9 @@ class Board
     display_captured_pieces
   end
 
-  def update_temp_array(array, piece, destination, turn)
-      array[array.index(piece)] = destination
-      array
+  def update_temp_array(array, piece, destination)
+    array[array.index(piece)] = destination
+    array
   end
 
   def display_captured_pieces
@@ -120,36 +125,36 @@ class Board
     p "white: #{white_king_position}, black:#{black_king_position}"
     check_array = []
     if turn.odd?
-      @white_pieces_array.each do |el| 
-        # p valid_check?(el, black_king_position, turn) 
-        check_array << valid_check?(el, black_king_position, turn) 
+      @white_pieces_array.each do |el|
+        # p valid_check?(el, black_king_position, turn)
+        check_array << valid_check?(el, black_king_position, turn)
       end
     elsif turn.even?
-      @black_pieces_array.each do |el| 
-        # p valid_check?(el, white_king_position, turn) 
-        check_array << valid_check?(el, white_king_position, turn) 
+      @black_pieces_array.each do |el|
+        # p valid_check?(el, white_king_position, turn)
+        check_array << valid_check?(el, white_king_position, turn)
       end
     end
     p "check array: #{check_array}"
     check_array.any?(true) ? true : false
   end
 
-  def out_of_check?(temp_array, turn)
-    p "in out_of_check method"
+  def still_in_check?(temp_array, turn)
+    p "in still_in_check method"
 
     white_king_position = white_pieces_array[12]
     black_king_position = black_pieces_array[4]
     p "white: #{white_king_position}, black:#{black_king_position}"
     check_array = []
     if turn.odd?
-      @white_pieces_array.each do |el| 
-        # p valid_check?(el, black_king_position, turn) 
-        check_array << valid_check?(el, black_king_position, turn) 
+      black_pieces_array.each do |el|
+        # p valid_check?(el, black_king_position, turn)
+        check_array << valid_check?(el, white_king_position, turn + 1)
       end
     elsif turn.even?
-      @black_pieces_array.each do |el| 
-        # p valid_check?(el, white_king_position, turn) 
-        check_array << valid_check?(el, white_king_position, turn) 
+      white_pieces_array.each do |el|
+        # p valid_check?(el, white_king_position, turn)
+        check_array << valid_check?(el, black_king_position, turn + 1)
       end
     end
     p "check array: #{check_array}"
@@ -157,7 +162,9 @@ class Board
   end
 
   def valid_check?(piece, destination, turn)
-    return false if piece.nil?
+    p "piece: #{piece}, destination: #{destination}, turn: #{turn}"
+    return false if piece.nil? || destination.nil?
+
     color = turn.odd? ? white : black
 
     if grid[piece[0]][piece[1]].match(pawn(color))

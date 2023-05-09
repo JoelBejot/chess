@@ -17,7 +17,7 @@ module Moves
 
   # Main methods for each piece type
   def pawn_moves(color, piece, destination)
-    return false if piece == nil || destination == nil
+    return false if piece.nil? || destination.nil?
 
     first = first_move?(color, piece)
     clear = clear_path?(piece, destination)
@@ -32,7 +32,7 @@ module Moves
   end
 
   def rook_moves(color, piece, destination)
-    return false if piece == nil || destination == nil
+    return false if piece.nil? || destination.nil?
 
     clear = clear_path?(piece, destination)
     capture = capturing?(color, piece, destination)
@@ -45,21 +45,21 @@ module Moves
   end
 
   def knight_moves(color, piece, destination)
-    return false if piece == nil || destination == nil
+    return false if piece.nil? || destination.nil?
 
     clear = true if grid[destination[0]][destination[1]].match(empty_circle)
     capture = opponent_at_end?(color, destination)
 
     return true if clear && valid_knight_moves(piece, destination)
     return true if capture && valid_knight_moves(piece, destination)
-   
+
     puts 'Invalid move! Please enter a valid move for a knight.'
 
     false
   end
 
   def bishop_moves(color, piece, destination)
-    return false if piece == nil || destination == nil
+    return false if piece.nil? || destination.nil?
 
     clear = clear_path?(piece, destination)
     capture = capturing?(color, piece, destination)
@@ -68,7 +68,7 @@ module Moves
     return true if capture && valid_bishop_moves(piece, destination)
 
     puts 'Invalid move! Please enter a valid move for a bishop.'
-    
+
     false
   end
 
@@ -90,7 +90,7 @@ module Moves
   end
 
   def king_moves(color, piece, destination)
-    return false if piece == nil || destination == nil
+    return false if piece.nil? || destination.nil?
 
     clear = clear_path?(piece, destination)
     capture = capturing?(color, piece, destination)
@@ -100,7 +100,7 @@ module Moves
 
     return true if clear && valid_king_moves(piece, destination)
     return true if capture && valid_king_moves(piece, destination)
-   
+
     puts 'Invalid move! Please enter a valid move for a king.'
 
     false
