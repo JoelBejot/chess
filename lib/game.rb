@@ -16,7 +16,7 @@ class Game
   include Symbols
   include Moves
 
-  attr_accessor :player1, :player2, :board, :turn, :game_piece, :game_destination, :user_piece, :user_destination, :white_check, :black_check
+  attr_accessor :player1, :player2, :board, :turn, :game_piece, :game_destination, :user_piece, :user_destination
   attr_reader :color_array
 
   def initialize
@@ -31,8 +31,6 @@ class Game
     @game_destination = []
     @user_piece = String.new
     @user_destination = String.new
-    @white_check = false
-    @black_check = false
   end
 
   def game
@@ -45,20 +43,16 @@ class Game
     loop do
       break if board.checkmate
 
-      (puts "#{player1.name}, your king is in check!") if @white_check
-      (puts "#{player2.name}, your king is in check!") if @black_check
+      (puts "#{player1.name}, your king is in check!") if board.white_check
+      (puts "#{player2.name}, your king is in check!") if board.black_check
       @turn += 1
       board.display_board
+      board.display_captured_pieces
       move(@turn)
       board.update_board(@game_piece, @game_destination)
       p "game piece: #{@game_piece}, game destination: #{@game_destination}"
-      board.update_array_position(@game_piece, @game_destination, @turn)
-      if turn.odd?
-        @black_check = board.check?(@turn)
-      elsif turn.even?
-        @white_check = board.check?(@turn)
-      end
-      p "in check? white: #{@white_check}, black: #{@black_check}"
+
+
       break if board.white_pieces_array[12].nil? || board.black_pieces_array[4].nil? || board.checkmate
     end
     turn.odd? ? (puts "#{player1.name} is the winner!") : (puts "#{player2.name} is the winner!")
@@ -87,19 +81,11 @@ class Game
 
       @game_piece = translate_user_input_to_grid(@user_piece)
       @game_destination = translate_user_input_to_grid(@user_destination)
-      temp_array = []
 
-      if white_check
-        temp_array = board.update_temp_array(board.white_pieces_array, @game_piece, @game_destination)
-        p "temp array: #{temp_array}"
-        next if board.still_in_check?(temp_array, turn)
-      elsif black_check
-        temp_array = update_temp_array(board.black_pieces_array, @game_piece, @game_destination)
-        p "temp array: #{temp_array}"
-        next if board.still_in_check?(temp_array, turn)
+      if valid_input && board.valid_move?(@game_piece, @game_destination, turn)
+        board.update_array_position(@game_piece, @game_destination, @turn)
+        break
       end
-
-      break if valid_input && board.valid_move?(@game_piece, @game_destination, turn)
 
       puts 'Please enter a valid move'
       puts ''

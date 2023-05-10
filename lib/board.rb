@@ -9,7 +9,8 @@ class Board
   include Enumerable
   include Moves
 
-  attr_accessor :grid, :white_pieces_array, :black_pieces_array, :captured_white_pieces, :captured_black_pieces
+  attr_accessor :grid, :white_pieces_array, :black_pieces_array, 
+    :captured_white_pieces, :captured_black_pieces, :white_check, :black_check
 
   def initialize
     @grid = Array.new(8) { Array.new(8) { "|#{empty_circle}|" } }
@@ -24,6 +25,8 @@ class Board
     ]
     @captured_white_pieces = []
     @captured_black_pieces = []
+    @white_check = false
+    @black_check = false
   end
 
   def display_board
@@ -45,20 +48,33 @@ class Board
     grid[piece[0]][piece[1]] = "|#{empty_circle}|"
   end
 
+    # if color == white && capturing?(color, piece, destination)
+    #   @captured_black_pieces << grid[destination[0]][destination[1]][1..-2]
+    #   p @captured_black_pieces.join(', ')
+    # elsif color == black && capturing?(color, piece, destination)
+    #   @captured_white_pieces << grid[destination[0]][destination[1]][1..-2]
+    #   p @captured_white_pieces.join(', ')
+    # end
+
   def valid_move?(piece, destination, turn)
     p 'Im in the valid move method'
-    return false if piece.nil? || destination.nil?
-
     p "piece, destination, turn = #{piece}, #{destination}, #{turn}"
-    color = turn.odd? ? white : black
 
-    if color == white && capturing?(color, piece, destination)
-      @captured_black_pieces << grid[destination[0]][destination[1]][1..-2]
-      p @captured_black_pieces.join(', ')
-    elsif color == black && capturing?(color, piece, destination)
-      @captured_white_pieces << grid[destination[0]][destination[1]][1..-2]
-      p @captured_white_pieces.join(', ')
-    end
+    return false if piece.nil? || destination.nil?
+    return false if check?(turn + 1)
+
+    color = turn.odd? ? white : black
+    # temp_array = []
+
+    # if white_check
+    #   temp_array = board.update_temp_array(board.white_pieces_array, @game_piece, @game_destination)
+    #   p "temp array: #{temp_array}"
+    #   # next if board.still_in_check?(temp_array, turn)
+    # elsif black_check
+    #   temp_array = update_temp_array(board.black_pieces_array, @game_piece, @game_destination)
+    #   p "temp array: #{temp_array}"
+    #   # next if board.still_in_check?(temp_array, turn)
+    # end
 
     if grid[piece[0]][piece[1]].match(pawn(color))
       pawn_moves(color, piece, destination)
@@ -73,36 +89,26 @@ class Board
     elsif grid[piece[0]][piece[1]].match(king(color))
       king_moves(color, piece, destination)
     end
+
+    if turn.odd?
+      @black_check = check?(turn)
+    elsif turn.even?
+      @white_check = check?(turn)
+    end
   end
 
   def update_array_position(piece, destination, turn)
-    p "in update_array - piece: #{piece}, destination: #{destination}"
-    p "white pieces array: #{@white_pieces_array}"
-    p "black pieces array: #{@black_pieces_array}"
-    return if @white_pieces_array.index(piece).nil? || @black_pieces_array.index(piece).nil?
+    # return if @white_pieces_array.index(piece).nil? || @black_pieces_array.index(piece).nil?
 
     if turn.odd?
       @white_pieces_array[@white_pieces_array.index(piece)] = destination
-      p @white_pieces_array[@white_pieces_array.index(destination)]
-      if @black_pieces_array.any?(@white_pieces_array[@white_pieces_array.index(destination)])
-        p "true"
-        p index = @black_pieces_array.index(destination)
-        @black_pieces_array[index] = nil
-      end
+      white_destination_index = @white_pieces_array[@white_pieces_array.index(destination)]
+      @black_pieces_array[index] = nil if @black_pieces_array.any?(white_destination_index)
     elsif turn.even?
       @black_pieces_array[@black_pieces_array.index(piece)] = destination
-      p @black_pieces_array[@black_pieces_array.index(destination)]
-      if @white_pieces_array.any?(@black_pieces_array[@black_pieces_array.index(destination)])
-        p "true"
-        p index = @white_pieces_array.index(destination)
-        @white_pieces_array[index] = nil
-      end
+      black_destination_index = @black_pieces_array[@black_pieces_array.index(destination)]
+      @white_pieces_array[index] = nil if @white_pieces_array.any?(black_destination_index)
     end
-
-    p "white pieces array #{white_pieces_array}"
-    p "black pieces array #{black_pieces_array}"
-
-    display_captured_pieces
   end
 
   def update_temp_array(array, piece, destination)
@@ -136,6 +142,7 @@ class Board
       end
     end
     p "check array: #{check_array}"
+    p "in check? white: #{@white_check}, black: #{@black_check}"
     check_array.any?(true) ? true : false
   end
 
@@ -183,7 +190,7 @@ class Board
   end
 
   def checkmate
-    return false
+    false
   end
 
   def add_pieces_to_board
