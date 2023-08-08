@@ -20,6 +20,10 @@ module Moves
     clear = clear_path?(piece, destination)
     capture = capturing?(color, piece, destination)
 
+    p "first #{first}"
+    p "clear #{clear}"
+    p "capture #{capture}"
+
     return true if first && clear && one_or_two_ahead?(color, piece, destination)
     return true if !first && clear && one_ahead?(color, piece, destination)
     return true if capture && valid_diagonal?(color, piece, destination)
@@ -141,11 +145,11 @@ module Moves
     row_range.reverse! if piece[0] > destination[0]
     column_range.reverse! if piece[1] > destination[1]
 
-    row_range[1..-1].each_index do |index|
+    row_range.each_index do |index|
       array[index] = grid[row_range[index]][column_range[index]].match(empty_circle) ? true : false
     end
 
-    # array.shift
+    array.shift
 
     return true if array.all?(true) || array.nil?
 
@@ -301,13 +305,13 @@ module Moves
     false
   end
 
-  def update_king_position(color, destination)
-    if color == white
-      @white_king_position = destination[0], destination[1]
-    else
-      @black_king_position = destination[0], destination[1]
-    end
-    p @white_king_position
-    p @black_king_position
-  end
+  # def update_king_position(color, destination)
+  #   if color == white
+  #     @white_king_position = destination[0], destination[1]
+  #   else
+  #     @black_king_position = destination[0], destination[1]
+  #   end
+  #   p @white_king_position
+  #   p @black_king_position
+  # end
 end

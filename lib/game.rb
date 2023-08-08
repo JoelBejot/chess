@@ -15,11 +15,9 @@ require 'io/console'
 # class for controlling game flow
 class Game
   include Symbols
-  # include Moves
+  include Moves
 
-  # attr_accessor :player1, :player2, :board, :turn, :game_piece, :game_destination, :user_piece, :user_destination
-  attr_accessor :player1, :player2, :board
-
+  attr_accessor :player1, :player2, :board, :turn, :game_piece, :game_destination, :user_piece, :user_destination
   attr_reader :color_array
 
   def initialize
@@ -29,11 +27,11 @@ class Game
     @player2.name = 'Player 2'
     @color_array = [white, black]
     @board = Board.new
-    # @turn = 0
-    # @game_piece = []
-    # @game_destination = []
-    # @user_piece = String.new
-    # @user_destination = String.new
+    @turn = 1
+    @game_piece = []
+    @game_destination = []
+    @user_piece = String.new
+    @user_destination = String.new
   end
 
   def game
@@ -42,14 +40,22 @@ class Game
     # chess_rules.rules
     # set_player_name
     who_goes_first
-    board.display_board
-    # turn = 0
-    # loop do
+    loop do
+      p "turn class #{turn.class}"
+      break if turn == 10
+
+      board.display_board
+      board.display_captured_pieces
+      move(turn)
+      board.update_board(@game_piece, @game_destination)
+      p "game piece: #{game_piece}, game destination: #{game_destination}"
+
+      @turn += 1
+    end
     #   break if board.checkmate
 
     #   (puts "#{player1.name}, your king is in check!") if board.white_check
     #   (puts "#{player2.name}, your king is in check!") if board.black_check
-    #   @turn += 1
     #   board.display_board
     #   board.display_captured_pieces
     #   move(@turn)
@@ -82,12 +88,11 @@ class Game
 
     loop do
       valid_input = get_move(turn)
+      @game_piece = translate_user_input_to_grid(user_piece)
+      @game_destination = translate_user_input_to_grid(user_destination)
 
-      @game_piece = translate_user_input_to_grid(@user_piece)
-      @game_destination = translate_user_input_to_grid(@user_destination)
-
-      if valid_input && board.valid_move?(@game_piece, @game_destination, turn)
-        board.update_array_position(@game_piece, @game_destination, @turn)
+      if valid_input && board.valid_move?(game_piece, game_destination, turn)
+        board.update_array_position(game_piece, game_destination, turn)
         break
       end
 
@@ -109,7 +114,7 @@ class Game
       puts 'Where would you like to move that piece?'
       @user_destination = gets.chomp.downcase
       puts ''
-      return true if valid_input?(@user_piece, @user_destination)
+      return true if valid_input?(user_piece, user_destination)
 
       puts "Invalid move! Please enter column then row, ex. 'd2'"
     end
@@ -153,7 +158,7 @@ class Game
 
   def assign_color
     player1.color = color_array.sample
-    player2.color = @player1.color == color_array[0] ? color_array[1] : color_array[0]
+    player2.color = player1.color == color_array[0] ? color_array[1] : color_array[0]
   end
 
   def display_player_color
