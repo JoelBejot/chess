@@ -1,36 +1,39 @@
 # frozen_string_literal: true
 
 require_relative 'player'
+
 require_relative 'rules'
 require_relative 'symbols'
-# require_relative 'moves'
+# # require_relative 'moves'
 require_relative 'board'
 require 'io/console'
 
-Dir["/home/joelbejot/chess/pieces/*.rb"].each {|file| require file }
+# Dir["/home/joelbejot/chess/pieces/*.rb"].each {|file| require file }
 
 # Dir["/path/to/directory/*.rb"].each {|file| require file }
 
 # class for controlling game flow
 class Game
   include Symbols
-  include Moves
+  # include Moves
 
-  attr_accessor :player1, :player2, :board, :turn, :game_piece, :game_destination, :user_piece, :user_destination
+  # attr_accessor :player1, :player2, :board, :turn, :game_piece, :game_destination, :user_piece, :user_destination
+  attr_accessor :player1, :player2, :board
+
   attr_reader :color_array
 
   def initialize
     @player1 = Player.new
-    @player1.name = "Player 1"
+    @player1.name = 'Player 1'
     @player2 = Player.new
-    @player2.name = "Player 2"
+    @player2.name = 'Player 2'
     @color_array = [white, black]
     @board = Board.new
-    @turn = 0
-    @game_piece = []
-    @game_destination = []
-    @user_piece = String.new
-    @user_destination = String.new
+    # @turn = 0
+    # @game_piece = []
+    # @game_destination = []
+    # @user_piece = String.new
+    # @user_destination = String.new
   end
 
   def game
@@ -38,24 +41,25 @@ class Game
     # chess_rules = Rules.new
     # chess_rules.rules
     # set_player_name
-    # who_goes_first
+    who_goes_first
+    board.display_board
     # turn = 0
-    loop do
-      break if board.checkmate
+    # loop do
+    #   break if board.checkmate
 
-      (puts "#{player1.name}, your king is in check!") if board.white_check
-      (puts "#{player2.name}, your king is in check!") if board.black_check
-      @turn += 1
-      board.display_board
-      board.display_captured_pieces
-      move(@turn)
-      board.update_board(@game_piece, @game_destination)
-      p "game piece: #{@game_piece}, game destination: #{@game_destination}"
+    #   (puts "#{player1.name}, your king is in check!") if board.white_check
+    #   (puts "#{player2.name}, your king is in check!") if board.black_check
+    #   @turn += 1
+    #   board.display_board
+    #   board.display_captured_pieces
+    #   move(@turn)
+    #   board.update_board(@game_piece, @game_destination)
+    #   p "game piece: #{@game_piece}, game destination: #{@game_destination}"
 
 
-      break if board.white_pieces_array[12].nil? || board.black_pieces_array[4].nil? || board.checkmate
-    end
-    turn.odd? ? (puts "#{player1.name} is the winner!") : (puts "#{player2.name} is the winner!")
+    #   break if board.white_pieces_array[12].nil? || board.black_pieces_array[4].nil? || board.checkmate
+    # end
+    # turn.odd? ? (puts "#{player1.name} is the winner!") : (puts "#{player2.name} is the winner!")
   end
 
   def set_player_name

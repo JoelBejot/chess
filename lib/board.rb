@@ -9,8 +9,8 @@ class Board
   include Enumerable
   include Moves
 
-  attr_accessor :grid, :white_pieces_array, :black_pieces_array, 
-    :captured_white_pieces, :captured_black_pieces, :white_check, :black_check
+  attr_accessor :grid, :white_pieces_array, :black_pieces_array,
+                :captured_white_pieces, :captured_black_pieces, :white_check, :black_check
 
   def initialize
     @grid = Array.new(8) { Array.new(8) { "|#{empty_circle}|" } }

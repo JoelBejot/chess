@@ -34,11 +34,11 @@ class Rules
         This removes their piece from the board, making your quest to capture the king easier!
         As noted above, pawns can only capture in the forward-diagonal motion.
         All other pieces capture in their usual way of travel.
-      
+
       4. Check and checkmate
         When the opponent's king is threatened by one of your pieces, that is called "check."
-        On the opponent's next turn, they must either move their king out of harm's way, 
-          put a piece between the king and the threatening piece, if possible, 
+        On the opponent's next turn, they must either move their king out of harm's way,
+          put a piece between the king and the threatening piece, if possible,
           or capture the threatening piece.
         If the opponent cannot free their king from "check," then that is called "checkmate,"
           and the game is over.
