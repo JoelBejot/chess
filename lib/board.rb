@@ -47,7 +47,7 @@ class Board
     p "piece #{piece}"
     p "destination #{destination}"
     p "grid[destination[0]][destination[1]] #{grid[destination[0]][destination[1]]}"
-    
+
     grid[destination[0]][destination[1]] = grid[piece[0]][piece[1]]
     grid[piece[0]][piece[1]] = "|#{empty_circle}|"
   end
@@ -95,15 +95,24 @@ class Board
     p "turn #{turn}"
     p "white pieces array #{white_pieces_array}"
     p "white_pieces_array.index(piece) #{white_pieces_array.index(piece)}"
+    p "black pieces array #{black_pieces_array}"
+    p "black_pieces_array.index(piece) #{black_pieces_array.index(piece)}"
 
     if turn.odd?
       white_pieces_array[white_pieces_array.index(piece)] = destination
       white_destination_index = white_pieces_array[white_pieces_array.index(destination)]
-      black_pieces_array[index] = nil if black_pieces_array.any?(white_destination_index)
+      p "black_pieces_array.any?(white_destination_index) #{black_pieces_array.any?(white_destination_index)}"
+      p "white destination index #{white_destination_index}"
+      p "black_pieces_array.index(white_destination_index) #{black_pieces_array.index(white_destination_index)}"
+      if black_pieces_array.any?(white_destination_index)
+        black_pieces_array[black_pieces_array.index(white_destination_index)] = nil
+      end
     elsif turn.even?
       black_pieces_array[black_pieces_array.index(piece)] = destination
       black_destination_index = black_pieces_array[black_pieces_array.index(destination)]
-      white_pieces_array[index] = nil if white_pieces_array.any?(black_destination_index)
+      if white_pieces_array.any?(black_destination_index)
+        white_pieces_array[white_pieces_array.index(black_destination_index)] = nil
+      end
     end
   end
 

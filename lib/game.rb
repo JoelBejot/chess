@@ -42,7 +42,7 @@ class Game
     who_goes_first
     loop do
       p "turn class #{turn.class}"
-      break if turn == 10
+      break if turn == 20
 
       board.display_board
       board.display_captured_pieces
