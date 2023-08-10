@@ -4,7 +4,7 @@ require_relative 'player'
 
 require_relative 'rules'
 require_relative 'symbols'
-# # require_relative 'moves'
+# require_relative 'moves'
 require_relative 'board'
 require 'io/console'
 
@@ -41,18 +41,20 @@ class Game
     # set_player_name
     who_goes_first
     loop do
-      p "turn class #{turn.class}"
+      break if board.checkmate
       break if turn == 20
 
       board.display_board
       board.display_captured_pieces
       move(turn)
       board.update_board(@game_piece, @game_destination)
+      p "opponent in check? #{turn.odd? ? board.check?(board.white_pieces_array, board.black_pieces_array, turn) : board.check?(board.black_pieces_array, board.white_pieces_array, turn)}"
+
       p "game piece: #{game_piece}, game destination: #{game_destination}"
 
       @turn += 1
     end
-    #   break if board.checkmate
+
 
     #   (puts "#{player1.name}, your king is in check!") if board.white_check
     #   (puts "#{player2.name}, your king is in check!") if board.black_check

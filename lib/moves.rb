@@ -14,6 +14,7 @@ module Moves
 
   # Main methods for each piece type
   def pawn_moves(color, piece, destination)
+    p "pawn moves"
     return false if piece.nil? || destination.nil?
 
     first = first_move?(color, piece)
