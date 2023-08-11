@@ -48,7 +48,18 @@ class Game
       board.display_captured_pieces
       move(turn)
       board.update_board(@game_piece, @game_destination)
-      p "opponent in check? #{turn.odd? ? board.check?(board.white_pieces_array, board.black_pieces_array, turn) : board.check?(board.black_pieces_array, board.white_pieces_array, turn)}"
+
+      # probably should be it's own method
+      if turn.odd? && board.check?(board.white_pieces_array, board.black_pieces_array, turn)
+        board.black_check = true
+        p "board.black_check #{board.black_check}"
+        puts "You have put #{player2.name} in check! Now they must move to remove the check."
+      elsif turn.even? && board.check?(board.black_pieces_array, board.white_pieces_array, turn)
+        board.white_check = true
+        p "board.white_check #{board.white_check}"
+        puts "You have put #{player1.name} in check! Now they must move to remove the check."
+      end
+
 
       p "game piece: #{game_piece}, game destination: #{game_destination}"
 

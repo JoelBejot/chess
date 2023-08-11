@@ -9,11 +9,12 @@ class Board
   include Enumerable
   include Moves
 
-  attr_accessor :grid, :white_pieces_array, :black_pieces_array,
+  attr_accessor :grid, :temp_grid, :white_pieces_array, :black_pieces_array,
                 :captured_white_pieces, :captured_black_pieces, :white_check, :black_check
 
   def initialize
     @grid = Array.new(8) { Array.new(8) { "|#{empty_circle}|" } }
+    @temp_grid = @grid
     add_pieces_to_board
     @white_pieces_array = [
       [6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7],
@@ -46,15 +47,94 @@ class Board
     return false if piece.nil? || destination.nil?
 
     color = turn.odd? ? white : black
-    move_the_piece = move_the_piece?(color, piece, destination)
 
-    return true if move_the_piece
+    # write the logic that will return false if the move does not make check false
+    # if white is in check, then black is attacker, and white is defender.
+    # my move needs to make all check_array values false, and return check to false
+    # if not, then valid_move? returns false 
+
+    
+
+    if turn.odd? && white_check
+      temp_array = white_pieces_array
+      temp_array[temp_array.index(piece)] = destination
+
+      temp_grid[destination[0]][destination[1]] = temp_grid[piece[0]][piece[1]]
+      temp_grid[piece[0]][piece[1]] = "|#{empty_circle}|"
+
+      white_check = false unless still_in_check?(black_pieces_array, temp_array, turn + 1)
+      p "still in check? #{still_in_check?(black_pieces_array, temp_array, turn + 1)}"
+    elsif turn.even? && black_check
+      temp_array = black_pieces_array
+      temp_array[temp_array.index(piece)] = destination
+
+      temp_grid[destination[0]][destination[1]] = temp_grid[piece[0]][piece[1]]
+      temp_grid[piece[0]][piece[1]] = "|#{empty_circle}|"
+
+      black_check = false unless still_in_check?(white_pieces_array, temp_array, turn + 1)
+      p "still in check? #{still_in_check?(white_pieces_array, temp_array, turn + 1)}"
+    end
+
+    return true if move_the_piece?(color, piece, destination)
+  end
+
+  def still_in_check?(attacker_array, defender_array, turn)
+    p "in still_in_check method"
+
+    p "attacker array: #{attacker_array}"
+    p "defender array: #{defender_array}"
+    p "defender king #{turn.odd? ? defender_array[4] : defender_array[12]}"
+
+    check_array = []
+
+    if turn.odd?
+      attacker_array.each do |el|
+        p "valid check? #{temp_valid_check?(el, defender_array[4], turn)}"
+        check_array << temp_valid_check?(el, defender_array[4], turn)
+      end
+    else
+      attacker_array.each do |el|
+        p temp_valid_check?(el, defender_array[12], turn)
+        check_array << temp_valid_check?(el, defender_array[12], turn)
+      end
+    end
+
+    p "check array: #{check_array}"
+    p "in check? white: #{white_check}, black: #{black_check}"
+
+    check_array.any?(true) ? true : false
+  end
+
+  def temp_valid_check?(piece, destination, turn)
+    p "piece: #{piece}, destination: #{destination}, turn: #{turn}"
+    return false if piece.nil? || destination.nil?
+
+    color = turn.odd? ? white : black
+    p "color #{color}"
+    temp_move_the_piece?(color, piece, destination)
+  end
+
+  def temp_move_the_piece?(color, piece, destination)
+    if temp_grid[piece[0]][piece[1]].match(pawn(color))
+      pawn_moves(color, piece, destination)
+    elsif temp_grid[piece[0]][piece[1]].match(rook(color))
+      rook_moves(color, piece, destination)
+    elsif temp_grid[piece[0]][piece[1]].match(knight(color))
+      knight_moves(color, piece, destination)
+    elsif temp_grid[piece[0]][piece[1]].match(bishop(color))
+      bishop_moves(color, piece, destination)
+    elsif temp_grid[piece[0]][piece[1]].match(queen(color))
+      queen_moves(color, piece, destination)
+    elsif temp_grid[piece[0]][piece[1]].match(king(color))
+      king_moves(color, piece, destination)
+    end
   end
 
   def check?(attacker_array, defender_array, turn)
     p "in check method"
 
     p "attacker array: #{attacker_array}"
+    p "defender array: #{defender_array}"
     p "defender king #{turn.odd? ? defender_array[4] : defender_array[12]}"
 
     check_array = []
@@ -87,9 +167,7 @@ class Board
   end
 
   def move_the_piece?(color, piece, destination)
-    p "grid[piece[0]][piece[1]] #{grid[piece[0]][piece[1]]}"
     if grid[piece[0]][piece[1]].match(pawn(color))
-      p "headed to pawn moves"
       pawn_moves(color, piece, destination)
     elsif grid[piece[0]][piece[1]].match(rook(color))
       rook_moves(color, piece, destination)
@@ -128,32 +206,6 @@ class Board
   def display_captured_pieces
     puts "Captured black pieces: #{captured_black_pieces.join(', ')}" unless captured_black_pieces.empty?
     puts "Captured white pieces: #{captured_white_pieces.join(', ')}" unless captured_white_pieces.empty?
-  end
-  
-
-
-
-
-  def still_in_check?(temp_array, turn)
-    p "in still_in_check method"
-
-    white_king_position = white_pieces_array[12]
-    black_king_position = black_pieces_array[4]
-    p "white: #{white_king_position}, black:#{black_king_position}"
-    check_array = []
-    if turn.odd?
-      black_pieces_array.each do |el|
-        # p valid_check?(el, black_king_position, turn)
-        check_array << valid_check?(el, white_king_position, turn + 1)
-      end
-    elsif turn.even?
-      white_pieces_array.each do |el|
-        # p valid_check?(el, white_king_position, turn)
-        check_array << valid_check?(el, black_king_position, turn + 1)
-      end
-    end
-    p "check array: #{check_array}"
-    check_array.any?(true) ? true : false
   end
 
   def checkmate
@@ -300,3 +352,21 @@ end
   
   # Update to see if any piece from symbols_array can reach king with valid_move?
 
+  # def still_in_check?(attacker_array, defender_array, turn)
+  #   p "in still_in_check method"
+
+  #   check_array = []
+  #   if turn.odd?
+  #     attacker_array.each do |el|
+  #       p valid_check?(el, defender_array[12], turn)
+  #       check_array << valid_check?(el, defender_array[12], turn)
+  #     end
+  #   elsif turn.even?
+  #     attacker_array.each do |el|
+  #       p valid_check?(el, defender_array[4], turn)
+  #       check_array << valid_check?(el, defender_array, turn)
+  #     end
+  #   end
+  #   p "check array: #{check_array}"
+  #   check_array.any?(true) ? true : false
+  # end
