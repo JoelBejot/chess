@@ -14,7 +14,8 @@ class Board
 
   def initialize
     @grid = Array.new(8) { Array.new(8) { "|#{empty_circle}|" } }
-    @temp_grid = @grid
+    @temp_grid = []
+    @grid.each { |el| @temp_grid << el.dup }
     add_pieces_to_board
     @white_pieces_array = [
       [6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7],
@@ -46,35 +47,42 @@ class Board
   def valid_move?(piece, destination, turn)
     return false if piece.nil? || destination.nil?
 
-    color = turn.odd? ? white : black
-
-    # write the logic that will return false if the move does not make check false
-    # if white is in check, then black is attacker, and white is defender.
-    # my move needs to make all check_array values false, and return check to false
-    # if not, then valid_move? returns false 
-
-    
+    color = turn.odd? ? white : black    
+    temp_array = []
 
     if turn.odd? && white_check
-      temp_array = white_pieces_array
+
+      @white_pieces_array.each { |el| temp_array << el.dup }
       temp_array[temp_array.index(piece)] = destination
 
       temp_grid[destination[0]][destination[1]] = temp_grid[piece[0]][piece[1]]
       temp_grid[piece[0]][piece[1]] = "|#{empty_circle}|"
 
-      white_check = false unless still_in_check?(black_pieces_array, temp_array, turn + 1)
+      @white_check = false unless still_in_check?(black_pieces_array, temp_array, turn + 1)
       p "still in check? #{still_in_check?(black_pieces_array, temp_array, turn + 1)}"
-    elsif turn.even? && black_check
-      temp_array = black_pieces_array
-      temp_array[temp_array.index(piece)] = destination
+    elsif turn.even? && black_check 
+      @black_pieces_array.each { |el| temp_array << el.dup }
 
+      p "black pieces array #{@black_pieces_array}"
+      p "temp array: #{temp_array}"
+      p "temp_array.index(piece) #{temp_array.index(piece)}"
+      p "destination #{destination}"
+      @grid.each { |el| p "grid object_ids #{el.object_id}" }
+      @temp_grid.each { |el| p "temp_grid object_ids #{el.object_id}" }
+
+      
+      temp_array[temp_array.index(piece)] = destination
       temp_grid[destination[0]][destination[1]] = temp_grid[piece[0]][piece[1]]
       temp_grid[piece[0]][piece[1]] = "|#{empty_circle}|"
 
-      black_check = false unless still_in_check?(white_pieces_array, temp_array, turn + 1)
+      @black_check = false unless still_in_check?(white_pieces_array, temp_array, turn + 1)
       p "still in check? #{still_in_check?(white_pieces_array, temp_array, turn + 1)}"
     end
 
+    p "color: #{color}, piece: #{piece}, destination #{destination}"
+    p "move the piece? #{move_the_piece?(color, piece, destination)}"
+    p "@grid[piece[0][piece[1]] #{@grid[piece[0]][piece[1]]}"
+    p "grid[destination[0][destination[1]] #{@grid[destination[0]][destination[1]]}"
     return true if move_the_piece?(color, piece, destination)
   end
 
@@ -91,11 +99,13 @@ class Board
       attacker_array.each do |el|
         p "valid check? #{temp_valid_check?(el, defender_array[4], turn)}"
         check_array << temp_valid_check?(el, defender_array[4], turn)
+        @white_check = check_array.any?(true) ? true : false
       end
     else
       attacker_array.each do |el|
         p temp_valid_check?(el, defender_array[12], turn)
         check_array << temp_valid_check?(el, defender_array[12], turn)
+        @black_check = check_array.any?(true) ? true : false
       end
     end
 
