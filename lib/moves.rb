@@ -13,102 +13,74 @@ module Moves
   ].freeze
 
   # Main methods for each piece type
-  def pawn_moves(color, piece, destination)
-    p "pawn moves"
+  def pawn_moves(board, color, piece, destination)
     return false if piece.nil? || destination.nil?
 
     first = first_move?(color, piece)
     clear = clear_path?(piece, destination)
-    capture = capturing?(color, piece, destination)
-
-    p "first #{first}"
-    p "clear #{clear}"
-    p "capture #{capture}"
+    capture = capturing?(board, color, piece, destination)
 
     return true if first && clear && one_or_two_ahead?(color, piece, destination)
     return true if !first && clear && one_ahead?(color, piece, destination)
     return true if capture && valid_diagonal?(color, piece, destination)
 
-    puts 'Invalid move! Please enter a valid move for a pawn.'
     false
   end
 
-  def rook_moves(color, piece, destination)
+  def rook_moves(board, color, piece, destination)
     return false if piece.nil? || destination.nil?
 
     clear = clear_path?(piece, destination)
-    capture = capturing?(color, piece, destination)
+    capture = capturing?(board, color, piece, destination)
 
     return true if (clear || capture) && valid_rook_moves(piece, destination)
 
-    # return true if capture && valid_rook_moves(piece, destination)
-
-    puts 'Invalid move! Please enter a valid move for a rook.'
     false
   end
 
-  def knight_moves(color, piece, destination)
+  def knight_moves(board, color, piece, destination)
     return false if piece.nil? || destination.nil?
 
-    clear = true if grid[destination[0]][destination[1]].match(empty_circle)
-    capture = opponent_at_end?(color, destination)
+    clear = true if board[destination[0]][destination[1]].match(empty_circle)
+    capture = opponent_at_end?(board, color, destination)
 
     return true if (clear || capture) && valid_knight_moves(piece, destination)
 
-    # return true if capture && valid_knight_moves(piece, destination)
-
-    puts 'Invalid move! Please enter a valid move for a knight.'
-
     false
   end
 
-  def bishop_moves(color, piece, destination)
+  def bishop_moves(board, color, piece, destination)
     return false if piece.nil? || destination.nil?
 
     clear = clear_path?(piece, destination)
-    capture = capturing?(color, piece, destination)
+    capture = capturing?(board, color, piece, destination)
 
     return true if (clear || capture) && valid_bishop_moves(piece, destination)
 
-    # return true if capture && valid_bishop_moves(piece, destination)
-
-    puts 'Invalid move! Please enter a valid move for a bishop.'
-
     false
   end
 
-  def queen_moves(color, piece, destination)
+  def queen_moves(board, color, piece, destination)
     return false if piece.nil? || destination.nil?
 
     clear = clear_path?(piece, destination)
-    capture = capturing?(color, piece, destination)
+    capture = capturing?(board, color, piece, destination)
 
-    # p "clear = #{clear}"
-    # p "capture = #{capture}"
+    p "clear: #{clear}"
+    p "capturing: #{capture}"
 
     return true if (clear || capture) && valid_queen_moves(piece, destination)
 
-    # return true if capture && valid_queen_moves(piece, destination)
-
-    puts 'Invalid move! Please enter a valid move for a queen.'
-
     false
   end
 
-  def king_moves(color, piece, destination)
+  def king_moves(board, color, piece, destination)
     return false if piece.nil? || destination.nil?
 
     clear = clear_path?(piece, destination)
-    capture = capturing?(color, piece, destination)
-
-    # check/checkmate methods - cannot move into a check or checkmate
-    # return false if check or checkmate
+    capture = capturing?(board, color, piece, destination)
 
     return true if (clear || capture) && valid_king_moves(piece, destination)
-
-    # return true if capture && valid_king_moves(piece, destination)
-
-    puts 'Invalid move! Please enter a valid move for a king.'
 
     false
   end
@@ -157,7 +129,7 @@ module Moves
     false
   end
 
-  def capturing?(color, piece, destination)
+  def capturing?(board, color, piece, destination)
     row_range = get_row_range(piece[0], destination[0])
     column_range = get_column_range(piece[1], destination[1])
 
@@ -168,20 +140,22 @@ module Moves
       clear = all_clear?(row_range[0..-2], column_range[0..-2], piece, destination)
     end
 
-    return true if clear && opponent_at_end?(color, destination)
+    p "clear in capturing method #{clear}"
+
+    return true if clear && opponent_at_end?(board, color, destination)
   end
 
-  def opponent_at_end?(color, destination)
+  def opponent_at_end?(board, color, destination)
     array = []
 
     if color == white
-      array[0] = if black_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }
+      array[0] = if black_symbols_array.any? { |el| el == board[destination[0]][destination[1]][1..-2] }
                    true
                  else
                    false
                  end
     else
-      array[0] = if white_symbols_array.any? { |el| el == grid[destination[0]][destination[1]][1..-2] }
+      array[0] = if white_symbols_array.any? { |el| el == board[destination[0]][destination[1]][1..-2] }
                    true
                  else
                    false

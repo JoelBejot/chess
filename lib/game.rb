@@ -47,7 +47,7 @@ class Game
       board.display_board
       board.display_captured_pieces
       move(turn)
-      board.update_board(@game_piece, @game_destination)
+      board.update_board(board.grid, @game_piece, @game_destination)
 
       # probably should be it's own method
       if turn.odd? && board.check?(board.white_pieces_array, board.black_pieces_array, turn)
@@ -65,20 +65,6 @@ class Game
 
       @turn += 1
     end
-
-
-    #   (puts "#{player1.name}, your king is in check!") if board.white_check
-    #   (puts "#{player2.name}, your king is in check!") if board.black_check
-    #   board.display_board
-    #   board.display_captured_pieces
-    #   move(@turn)
-    #   board.update_board(@game_piece, @game_destination)
-    #   p "game piece: #{@game_piece}, game destination: #{@game_destination}"
-
-
-    #   break if board.white_pieces_array[12].nil? || board.black_pieces_array[4].nil? || board.checkmate
-    # end
-    # turn.odd? ? (puts "#{player1.name} is the winner!") : (puts "#{player2.name} is the winner!")
   end
 
   def set_player_name

@@ -14,9 +14,8 @@ class Board
 
   def initialize
     @grid = Array.new(8) { Array.new(8) { "|#{empty_circle}|" } }
-    @temp_grid = []
-    @grid.each { |el| @temp_grid << el.dup }
-    add_pieces_to_board
+    add_pieces_to_board(@grid)
+    # add_pieces_to_board(@temp_grid)
     @white_pieces_array = [
       [6, 0], [6, 1], [6, 2], [6, 3], [6, 4], [6, 5], [6, 6], [6, 7],
       [7, 0], [7, 1], [7, 2], [7, 3], [7, 4], [7, 5], [7, 6], [7, 7]
@@ -39,157 +38,158 @@ class Board
     puts ''
   end
 
-  def update_board(piece, destination)
-    grid[destination[0]][destination[1]] = grid[piece[0]][piece[1]]
-    grid[piece[0]][piece[1]] = "|#{empty_circle}|"
+  def update_board(board, piece, destination)
+    board[destination[0]][destination[1]] = board[piece[0]][piece[1]]
+    board[piece[0]][piece[1]] = "|#{empty_circle}|"
+
+    board
   end
 
   def valid_move?(piece, destination, turn)
     return false if piece.nil? || destination.nil?
 
-    color = turn.odd? ? white : black    
-    temp_array = []
+    temp_grid = []
+    @grid.each { |el| temp_grid << el.dup }
+
+    temp_grid = update_board(temp_grid, piece, destination)
+    p "temp grid: #{temp_grid}"
+
+    p "@white_check: #{@white_check}"
+    p "@black_check: #{@black_check}"
+
+    color = turn.odd? ? white : black
 
     if turn.odd? && white_check
-
+      temp_array = []
       @white_pieces_array.each { |el| temp_array << el.dup }
       temp_array[temp_array.index(piece)] = destination
-
       temp_grid[destination[0]][destination[1]] = temp_grid[piece[0]][piece[1]]
       temp_grid[piece[0]][piece[1]] = "|#{empty_circle}|"
+      # update_temp_array(temp_array, piece, destination)
+      p "still in check? #{still_in_check?(temp_grid, black_pieces_array, temp_array, turn + 1)}"
+      @white_check = false unless still_in_check?(temp_grid, black_pieces_array, temp_array, turn + 1)
+      p "@white check: #{@white_check}"
 
-      @white_check = false unless still_in_check?(black_pieces_array, temp_array, turn + 1)
-      p "still in check? #{still_in_check?(black_pieces_array, temp_array, turn + 1)}"
-    elsif turn.even? && black_check 
+      return false if @white_check
+
+    elsif turn.even? && black_check
+      temp_array = []
       @black_pieces_array.each { |el| temp_array << el.dup }
-
-      p "black pieces array #{@black_pieces_array}"
-      p "temp array: #{temp_array}"
-      p "temp_array.index(piece) #{temp_array.index(piece)}"
-      p "destination #{destination}"
-      @grid.each { |el| p "grid object_ids #{el.object_id}" }
-      @temp_grid.each { |el| p "temp_grid object_ids #{el.object_id}" }
-
-      
       temp_array[temp_array.index(piece)] = destination
       temp_grid[destination[0]][destination[1]] = temp_grid[piece[0]][piece[1]]
       temp_grid[piece[0]][piece[1]] = "|#{empty_circle}|"
+      # update_temp_array(temp_array, piece, destination)
+      p "still in check? #{still_in_check?(temp_grid, white_pieces_array, temp_array, turn + 1)}"
+      @black_check = false unless still_in_check?(temp_grid, white_pieces_array, temp_array, turn + 1)
+      p "@black_check #{@black_check}"
 
-      @black_check = false unless still_in_check?(white_pieces_array, temp_array, turn + 1)
-      p "still in check? #{still_in_check?(white_pieces_array, temp_array, turn + 1)}"
+      return false if @black_check
+
     end
 
-    p "color: #{color}, piece: #{piece}, destination #{destination}"
-    p "move the piece? #{move_the_piece?(color, piece, destination)}"
-    p "@grid[piece[0][piece[1]] #{@grid[piece[0]][piece[1]]}"
-    p "grid[destination[0][destination[1]] #{@grid[destination[0]][destination[1]]}"
-    return true if move_the_piece?(color, piece, destination)
+    p "@grid: #{@grid}"
+    p "color: #{color}, piece: #{piece}, destination: #{destination}"
+    p "move the piece: #{move_the_piece?(@grid, color, piece, destination)}"
+    return true if move_the_piece?(@grid, color, piece, destination)
+
+    false
   end
 
-  def still_in_check?(attacker_array, defender_array, turn)
-    p "in still_in_check method"
-
+  def still_in_check?(temp_grid, attacker_array, defender_array, turn)
     p "attacker array: #{attacker_array}"
     p "defender array: #{defender_array}"
-    p "defender king #{turn.odd? ? defender_array[4] : defender_array[12]}"
 
     check_array = []
 
     if turn.odd?
       attacker_array.each do |el|
-        p "valid check? #{temp_valid_check?(el, defender_array[4], turn)}"
-        check_array << temp_valid_check?(el, defender_array[4], turn)
-        @white_check = check_array.any?(true) ? true : false
+        p "temp valid check: #{temp_valid_check?(temp_grid, el, defender_array[4], turn)}"
+        p "el: #{el}, defender array[4]: #{defender_array[4]}"
+        check_array << temp_valid_check?(temp_grid, el, defender_array[4], turn)
+        # @white_check = check_array.any?(true) ? true : false
       end
-    else
+    elsif turn.even?
       attacker_array.each do |el|
-        p temp_valid_check?(el, defender_array[12], turn)
-        check_array << temp_valid_check?(el, defender_array[12], turn)
-        @black_check = check_array.any?(true) ? true : false
+        p "temp valid check: #{temp_valid_check?(temp_grid, el, defender_array[12], turn)}"
+        check_array << temp_valid_check?(temp_grid, el, defender_array[12], turn)
+        # @black_check = check_array.any?(true) ? true : false
       end
     end
 
     p "check array: #{check_array}"
-    p "in check? white: #{white_check}, black: #{black_check}"
-
     check_array.any?(true) ? true : false
   end
 
-  def temp_valid_check?(piece, destination, turn)
-    p "piece: #{piece}, destination: #{destination}, turn: #{turn}"
+  def temp_valid_check?(temp_grid, piece, destination, turn)
     return false if piece.nil? || destination.nil?
 
     color = turn.odd? ? white : black
-    p "color #{color}"
-    temp_move_the_piece?(color, piece, destination)
+    move_the_piece?(temp_grid, color, piece, destination)
   end
 
-  def temp_move_the_piece?(color, piece, destination)
+  def move_the_piece?(board, color, piece, destination)
+    p "color #{color}"
+    p "board[piece[0]][piece[1]] #{board[piece[0]][piece[1]]}"
+    p "board[piece[0]][piece[1]].match((color)) #{board[piece[0]][piece[1]].match((color))}"
+
+    p "white symbols match with any #{white_symbols_array.any?(board[piece[0]][piece[1]])}"
+
+    if board[piece[0]][piece[1]].match((color))
+      pawn_moves(board, color, piece, destination)
+    elsif board[piece[0]][piece[1]].match(rook(color))
+      rook_moves(board, color, piece, destination)
+    elsif board[piece[0]][piece[1]].match(knight(color))
+      knight_moves(board, color, piece, destination)
+    elsif board[piece[0]][piece[1]].match(bishop(color))
+      bishop_moves(board, color, piece, destination)
+    elsif board[piece[0]][piece[1]].match(queen(color))
+      queen_moves(board, color, piece, destination)
+    elsif board[piece[0]][piece[1]].match(king(color))
+      king_moves(board, color, piece, destination)
+    end
+
+    false
+  end
+
+  def temp_move_the_piece?(temp_grid, color, piece, destination)
+    p "color: #{color}, piece: #{piece}, destination: #{destination}"
+    # puts "temp_grid #{temp_grid}"
     if temp_grid[piece[0]][piece[1]].match(pawn(color))
-      pawn_moves(color, piece, destination)
+      pawn_moves(temp_grid, color, piece, destination)
     elsif temp_grid[piece[0]][piece[1]].match(rook(color))
-      rook_moves(color, piece, destination)
+      rook_moves(temp_grid, color, piece, destination)
     elsif temp_grid[piece[0]][piece[1]].match(knight(color))
-      knight_moves(color, piece, destination)
+      knight_moves(temp_grid, color, piece, destination)
     elsif temp_grid[piece[0]][piece[1]].match(bishop(color))
-      bishop_moves(color, piece, destination)
+      bishop_moves(temp_grid, color, piece, destination)
     elsif temp_grid[piece[0]][piece[1]].match(queen(color))
-      queen_moves(color, piece, destination)
+      queen_moves(temp_grid, color, piece, destination)
     elsif temp_grid[piece[0]][piece[1]].match(king(color))
-      king_moves(color, piece, destination)
+      king_moves(temp_grid, color, piece, destination)
     end
   end
 
   def check?(attacker_array, defender_array, turn)
-    p "in check method"
-
-    p "attacker array: #{attacker_array}"
-    p "defender array: #{defender_array}"
-    p "defender king #{turn.odd? ? defender_array[4] : defender_array[12]}"
-
     check_array = []
 
     if turn.odd?
       attacker_array.each do |el|
-        p "valid check? #{valid_check?(el, defender_array[4], turn)}"
         check_array << valid_check?(el, defender_array[4], turn)
       end
     else
       attacker_array.each do |el|
-        p valid_check?(el, defender_array[12], turn)
         check_array << valid_check?(el, defender_array[12], turn)
       end
     end
-
-    p "check array: #{check_array}"
-    p "in check? white: #{white_check}, black: #{black_check}"
 
     check_array.any?(true) ? true : false
   end
 
   def valid_check?(piece, destination, turn)
-    p "piece: #{piece}, destination: #{destination}, turn: #{turn}"
     return false if piece.nil? || destination.nil?
 
     color = turn.odd? ? white : black
-    p "color #{color}"
     move_the_piece?(color, piece, destination)
-  end
-
-  def move_the_piece?(color, piece, destination)
-    if grid[piece[0]][piece[1]].match(pawn(color))
-      pawn_moves(color, piece, destination)
-    elsif grid[piece[0]][piece[1]].match(rook(color))
-      rook_moves(color, piece, destination)
-    elsif grid[piece[0]][piece[1]].match(knight(color))
-      knight_moves(color, piece, destination)
-    elsif grid[piece[0]][piece[1]].match(bishop(color))
-      bishop_moves(color, piece, destination)
-    elsif grid[piece[0]][piece[1]].match(queen(color))
-      queen_moves(color, piece, destination)
-    elsif grid[piece[0]][piece[1]].match(king(color))
-      king_moves(color, piece, destination)
-    end
   end
 
   def update_array_position(piece, destination, turn)
@@ -209,6 +209,7 @@ class Board
   end
 
   def update_temp_array(array, piece, destination)
+    p "update temp array array: #{array}"
     array[array.index(piece)] = destination
     array
   end
@@ -222,161 +223,89 @@ class Board
     false
   end
 
-  def add_pieces_to_board
-    assign_white_pieces
-    assign_black_pieces
+  def add_pieces_to_board(board)
+    assign_white_pieces(board)
+    assign_black_pieces(board)
   end
 
-  def assign_white_pieces
-    assign_pawns(white)
-    assign_power_pieces(white)
+  def assign_white_pieces(board)
+    assign_pawns(board, white)
+    assign_power_pieces(board, white)
   end
 
-  def assign_black_pieces
-    assign_pawns(black)
-    assign_power_pieces(black)
+  def assign_black_pieces(board)
+    assign_pawns(board, black)
+    assign_power_pieces(board, black)
   end
 
-  def assign_pawns(color)
+  def assign_pawns(board, color)
     if color == white
-      grid[6].each_index { |index| grid[6][index] = "|#{pawn(color)}|" }
+      grid[6].each_index { |index| board[6][index] = "|#{pawn(color)}|" }
     else
-      grid[1].each_index { |index| grid[1][index] = "|#{pawn(color)}|" }
+      grid[1].each_index { |index| board[1][index] = "|#{pawn(color)}|" }
     end
   end
 
-  def assign_power_pieces(color)
-    assign_rooks(color)
-    assign_knights(color)
-    assign_bishops(color)
-    assign_kings_and_queens(color)
+  def assign_power_pieces(board, color)
+    assign_rooks(board, color)
+    assign_knights(board, color)
+    assign_bishops(board, color)
+    assign_kings_and_queens(board, color)
   end
 
-  def assign_rooks(color)
-    color == white ? assign_white_rooks(color) : assign_black_rooks(color)
+  def assign_rooks(board, color)
+    color == white ? assign_white_rooks(board, color) : assign_black_rooks(board, color)
   end
 
-  def assign_white_rooks(color)
-    grid[7][0] = "|#{rook(color)}|"
-    grid[7][7] = "|#{rook(color)}|"
+  def assign_white_rooks(board, color)
+    board[7][0] = "|#{rook(color)}|"
+    board[7][7] = "|#{rook(color)}|"
   end
 
-  def assign_black_rooks(color)
-    grid[0][0] = "|#{rook(color)}|"
-    grid[0][7] = "|#{rook(color)}|"
+  def assign_black_rooks(board, color)
+    board[0][0] = "|#{rook(color)}|"
+    board[0][7] = "|#{rook(color)}|"
   end
 
-  def assign_knights(color)
-    color == white ? assign_white_knights(color) : assign_black_knights(color)
+  def assign_knights(board, color)
+    color == white ? assign_white_knights(board, color) : assign_black_knights(board, color)
   end
 
-  def assign_white_knights(color)
-    grid[7][1] = "|#{knight(color)}|"
-    grid[7][6] = "|#{knight(color)}|"
+  def assign_white_knights(board, color)
+    board[7][1] = "|#{knight(color)}|"
+    board[7][6] = "|#{knight(color)}|"
   end
 
-  def assign_black_knights(color)
-    grid[0][1] = "|#{knight(color)}|"
-    grid[0][6] = "|#{knight(color)}|"
+  def assign_black_knights(board, color)
+    board[0][1] = "|#{knight(color)}|"
+    board[0][6] = "|#{knight(color)}|"
   end
 
-  def assign_bishops(color)
-    color == white ? assign_white_bishops(color) : assign_black_bishops(color)
+  def assign_bishops(board, color)
+    color == white ? assign_white_bishops(board, color) : assign_black_bishops(board, color)
   end
 
-  def assign_white_bishops(color)
-    grid[7][2] = "|#{bishop(color)}|"
-    grid[7][5] = "|#{bishop(color)}|"
+  def assign_white_bishops(board, color)
+    board[7][2] = "|#{bishop(color)}|"
+    board[7][5] = "|#{bishop(color)}|"
   end
 
-  def assign_black_bishops(color)
-    grid[0][2] = "|#{bishop(color)}|"
-    grid[0][5] = "|#{bishop(color)}|"
+  def assign_black_bishops(board, color)
+    board[0][2] = "|#{bishop(color)}|"
+    board[0][5] = "|#{bishop(color)}|"
   end
 
-  def assign_kings_and_queens(color)
-    color == white ? assign_white_kq(color) : assign_black_kq(color)
+  def assign_kings_and_queens(board, color)
+    color == white ? assign_white_kq(board, color) : assign_black_kq(board, color)
   end
 
-  def assign_white_kq(color)
-    grid[7][3] = "|#{queen(color)}|"
-    grid[7][4] = "|#{king(color)}|"
+  def assign_white_kq(board, color)
+    board[7][3] = "|#{queen(color)}|"
+    board[7][4] = "|#{king(color)}|"
   end
 
-  def assign_black_kq(color)
-    grid[0][3] = "|#{queen(color)}|"
-    grid[0][4] = "|#{king(color)}|"
+  def assign_black_kq(board, color)
+    board[0][3] = "|#{queen(color)}|"
+    board[0][4] = "|#{king(color)}|"
   end
 end
-
-  # if color == white && capturing?(color, piece, destination)
-  #   @captured_black_pieces << grid[destination[0]][destination[1]][1..-2]
-  #   p @captured_black_pieces.join(', ')
-  # elsif color == black && capturing?(color, piece, destination)
-  #   @captured_white_pieces << grid[destination[0]][destination[1]][1..-2]
-  #   p @captured_white_pieces.join(', ')
-  # end
-
-  # it's valid move if the following conditions are true
-  # - the piece can make that move
-  # - if you are in check, that move gets you out of check
-  # def valid_move?(piece, destination, turn)
-  #   p 'Im in the valid move method'
-  #   p "piece, destination, turn = #{piece}, #{destination}, #{turn}"
-
-  #   return false if piece.nil? || destination.nil?
-
-  #   # temp_array = []
-  #   temp_array = if turn.odd?
-  #                  update_temp_array(white_pieces_array, piece, destination)
-  #                elsif turn.even?
-  #                  update_temp_array(black_pieces_array, piece, destination)
-  #                end
-
-
-  #   # p am_i_in_check = check?(temp_array, turn + 1)
-
-  #   color = turn.odd? ? white : black
-  #   # temp_array = []
-
-  #   # if white_check
-  #   #   temp_array = board.update_temp_array(board.white_pieces_array, @game_piece, @game_destination)
-  #   #   p "temp array: #{temp_array}"
-  #   #   # next if board.still_in_check?(temp_array, turn)
-  #   # elsif black_check
-  #   #   temp_array = update_temp_array(board.black_pieces_array, @game_piece, @game_destination)
-  #   #   p "temp array: #{temp_array}"
-  #   #   # next if board.still_in_check?(temp_array, turn)
-  #   # end
-  #   move_the_piece = move_the_piece?(color, piece, destination)
-
-  #   # if turn.odd?
-  #   #   p @black_check = check?(turn)
-  #   # elsif turn.even?
-  #   #   p @white_check = check?(turn)
-  #   # end
-
-  #   return true if move_the_piece
-  # end
-
-  
-  # Update to see if any piece from symbols_array can reach king with valid_move?
-
-  # def still_in_check?(attacker_array, defender_array, turn)
-  #   p "in still_in_check method"
-
-  #   check_array = []
-  #   if turn.odd?
-  #     attacker_array.each do |el|
-  #       p valid_check?(el, defender_array[12], turn)
-  #       check_array << valid_check?(el, defender_array[12], turn)
-  #     end
-  #   elsif turn.even?
-  #     attacker_array.each do |el|
-  #       p valid_check?(el, defender_array[4], turn)
-  #       check_array << valid_check?(el, defender_array, turn)
-  #     end
-  #   end
-  #   p "check array: #{check_array}"
-  #   check_array.any?(true) ? true : false
-  # end
