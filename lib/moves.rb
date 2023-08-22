@@ -14,11 +14,17 @@ module Moves
 
   # Main methods for each piece type
   def pawn_moves(board, color, piece, destination)
+    p "in pawn moves"
     return false if piece.nil? || destination.nil?
 
     first = first_move?(color, piece)
     clear = clear_path?(piece, destination)
     capture = capturing?(board, color, piece, destination)
+
+    p first
+    p clear
+    p capture
+    p one_or_two_ahead?(color, piece, destination)
 
     return true if first && clear && one_or_two_ahead?(color, piece, destination)
     return true if !first && clear && one_ahead?(color, piece, destination)

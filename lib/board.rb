@@ -133,9 +133,14 @@ class Board
     p "board[piece[0]][piece[1]].match((color)) #{board[piece[0]][piece[1]].match((color))}"
 
     p "white symbols match with any #{white_symbols_array.any?(board[piece[0]][piece[1]])}"
+    p "white symbols array #{white_symbols_array}"
+    p "white symbols #{white_symbols_array.any?(pawn(color))}"
 
-    if board[piece[0]][piece[1]].match((color))
-      pawn_moves(board, color, piece, destination)
+
+
+    if board[piece[0]][piece[1]].match(pawn(color))
+      p pawn_moves(board, color, piece, destination)
+      return pawn_moves(board, color, piece, destination)
     elsif board[piece[0]][piece[1]].match(rook(color))
       rook_moves(board, color, piece, destination)
     elsif board[piece[0]][piece[1]].match(knight(color))
@@ -189,7 +194,7 @@ class Board
     return false if piece.nil? || destination.nil?
 
     color = turn.odd? ? white : black
-    move_the_piece?(color, piece, destination)
+    move_the_piece?(@grid, color, piece, destination)
   end
 
   def update_array_position(piece, destination, turn)
