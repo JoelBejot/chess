@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative 'game'
 require_relative 'symbols'
 require_relative 'moves'
 
@@ -79,6 +80,17 @@ class Board
       temp_grid[destination[0]][destination[1]] = temp_grid[piece[0]][piece[1]]
       temp_grid[piece[0]][piece[1]] = "|#{empty_circle}|"
       # update_temp_array(temp_array, piece, destination)
+      temp_grid[6].each do |el|
+        p "el #{el}"
+        arr = translate_user_input_to_grid(el)
+        temp_array << move_the_piece?(temp_grid, color, arr, black_pieces_array[4])
+      end
+      temp_grid[7].each do |el|
+        p "el #{el}"
+        arr = translate_user_input_to_grid(el)
+        temp_array << move_the_piece?(temp_grid, color, arr, black_pieces_array[4])
+      end
+      p "temp array #{temp_array}"
       p "still in check? #{still_in_check?(temp_grid, white_pieces_array, temp_array, turn + 1)}"
       @black_check = false unless still_in_check?(temp_grid, white_pieces_array, temp_array, turn + 1)
       p "@black_check #{@black_check}"
@@ -128,29 +140,27 @@ class Board
   end
 
   def move_the_piece?(board, color, piece, destination)
-    p "color #{color}"
-    p "board[piece[0]][piece[1]] #{board[piece[0]][piece[1]]}"
-    p "board[piece[0]][piece[1]].match((color)) #{board[piece[0]][piece[1]].match((color))}"
+    # p "color #{color}"
+    # p "board[piece[0]][piece[1]] #{board[piece[0]][piece[1]]}"
+    # p "board[piece[0]][piece[1]].match((color)) #{board[piece[0]][piece[1]].match((color))}"
 
-    p "white symbols match with any #{white_symbols_array.any?(board[piece[0]][piece[1]])}"
-    p "white symbols array #{white_symbols_array}"
-    p "white symbols #{white_symbols_array.any?(pawn(color))}"
-
-
+    # p "white symbols match with any #{white_symbols_array.any?(board[piece[0]][piece[1]])}"
+    # p "white symbols array #{white_symbols_array}"
+    # p "white symbols #{white_symbols_array.any?(pawn(color))}"
 
     if board[piece[0]][piece[1]].match(pawn(color))
       p pawn_moves(board, color, piece, destination)
       return pawn_moves(board, color, piece, destination)
     elsif board[piece[0]][piece[1]].match(rook(color))
-      rook_moves(board, color, piece, destination)
+      return rook_moves(board, color, piece, destination)
     elsif board[piece[0]][piece[1]].match(knight(color))
-      knight_moves(board, color, piece, destination)
+      return knight_moves(board, color, piece, destination)
     elsif board[piece[0]][piece[1]].match(bishop(color))
-      bishop_moves(board, color, piece, destination)
+      return bishop_moves(board, color, piece, destination)
     elsif board[piece[0]][piece[1]].match(queen(color))
-      queen_moves(board, color, piece, destination)
+      return queen_moves(board, color, piece, destination)
     elsif board[piece[0]][piece[1]].match(king(color))
-      king_moves(board, color, piece, destination)
+      return king_moves(board, color, piece, destination)
     end
 
     false

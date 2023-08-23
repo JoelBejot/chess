@@ -21,10 +21,10 @@ module Moves
     clear = clear_path?(piece, destination)
     capture = capturing?(board, color, piece, destination)
 
-    p first
-    p clear
-    p capture
-    p one_or_two_ahead?(color, piece, destination)
+    # p first
+    # p clear
+    # p capture
+    # p one_or_two_ahead?(color, piece, destination)
 
     return true if first && clear && one_or_two_ahead?(color, piece, destination)
     return true if !first && clear && one_ahead?(color, piece, destination)

@@ -34,7 +34,7 @@ class Game
     @user_destination = String.new
   end
 
-  def game
+  def games
     # intro
     # chess_rules = Rules.new
     # chess_rules.rules
